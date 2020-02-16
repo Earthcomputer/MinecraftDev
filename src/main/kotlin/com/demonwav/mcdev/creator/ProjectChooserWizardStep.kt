@@ -14,6 +14,7 @@ import com.demonwav.mcdev.asset.PlatformAssets
 import com.demonwav.mcdev.platform.PlatformType
 import com.demonwav.mcdev.platform.bukkit.BukkitProjectConfiguration
 import com.demonwav.mcdev.platform.bungeecord.BungeeCordProjectConfiguration
+import com.demonwav.mcdev.platform.fabric.FabricProjectConfiguration
 import com.demonwav.mcdev.platform.forge.ForgeProjectConfiguration
 import com.demonwav.mcdev.platform.liteloader.LiteLoaderProjectConfiguration
 import com.demonwav.mcdev.platform.sponge.SpongeProjectConfiguration
@@ -44,6 +45,7 @@ class ProjectChooserWizardStep(private val creator: MinecraftProjectCreator) : M
     private lateinit var bungeeCordPluginCheckBox: JCheckBox
     private lateinit var waterfallPluginCheckBox: JCheckBox
     private lateinit var liteLoaderModCheckBox: JCheckBox
+    private lateinit var fabricModCheckBox: JCheckBox
 
     override fun getComponent(): JComponent {
         chooserPanel.border = IdeBorderFactory.createBorder()
@@ -86,6 +88,7 @@ class ProjectChooserWizardStep(private val creator: MinecraftProjectCreator) : M
         liteLoaderModCheckBox.addActionListener { fillInInfoPane() }
         bungeeCordPluginCheckBox.addActionListener { toggle(bungeeCordPluginCheckBox, waterfallPluginCheckBox) }
         waterfallPluginCheckBox.addActionListener { toggle(waterfallPluginCheckBox, bungeeCordPluginCheckBox) }
+        fabricModCheckBox.addActionListener { fillInInfoPane() }
 
         if (UIUtil.isUnderDarcula()) {
             spongeIcon.icon = PlatformAssets.SPONGE_ICON_2X_DARK
@@ -121,6 +124,7 @@ class ProjectChooserWizardStep(private val creator: MinecraftProjectCreator) : M
         sb.append(liteLoaderModCheckBox, liteLoaderInfo)
         sb.append(bungeeCordPluginCheckBox, bungeeCordInfo)
         sb.append(waterfallPluginCheckBox, waterfallInfo)
+        sb.append(fabricModCheckBox, fabricInfo)
 
         sb.append("</font></html>")
 
@@ -161,6 +165,10 @@ class ProjectChooserWizardStep(private val creator: MinecraftProjectCreator) : M
         if (waterfallPluginCheckBox.isSelected) {
             creator.configs += BungeeCordProjectConfiguration(PlatformType.WATERFALL)
         }
+
+        if (fabricModCheckBox.isSelected) {
+            creator.configs += FabricProjectConfiguration()
+        }
     }
 
     override fun validate(): Boolean {
@@ -171,7 +179,8 @@ class ProjectChooserWizardStep(private val creator: MinecraftProjectCreator) : M
             forgeModCheckBox.isSelected ||
             liteLoaderModCheckBox.isSelected ||
             bungeeCordPluginCheckBox.isSelected ||
-            waterfallPluginCheckBox.isSelected
+            waterfallPluginCheckBox.isSelected ||
+            fabricModCheckBox.isSelected
     }
 
     companion object {
@@ -199,5 +208,8 @@ class ProjectChooserWizardStep(private val creator: MinecraftProjectCreator) : M
         private const val liteLoaderInfo = "Create a standard " +
             "<a href=\"http://www.liteloader.com/\">LiteLoader</a> mod, for use " +
             "on LiteLoader clients."
+        private const val fabricInfo = "Create a standard " +
+            "<a href=\"https://www.fabricmc.net/\">Fabric</a> mod, for use " +
+            "on Fabric servers and clients."
     }
 }

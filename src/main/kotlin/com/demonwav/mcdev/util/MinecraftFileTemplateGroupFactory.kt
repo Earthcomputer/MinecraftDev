@@ -60,6 +60,13 @@ class MinecraftFileTemplateGroupFactory : FileTemplateGroupDescriptorFactory {
         )
         group.addTemplate(FileTemplateDescriptor(LITELOADER_MAIN_CLASS_TEMPLATE, PlatformAssets.LITELOADER_ICON))
 
+        group.addTemplate(FileTemplateDescriptor(FABRIC_BUILD_GRADLE_TEMPLATE, PlatformAssets.FABRIC_ICON))
+        group.addTemplate(FileTemplateDescriptor(FABRIC_CLIENT_CLASS_TEMPLATE, PlatformAssets.FABRIC_ICON))
+        group.addTemplate(FileTemplateDescriptor(FABRIC_GRADLE_PROPERTIES_TEMPLATE, PlatformAssets.FABRIC_ICON))
+        group.addTemplate(FileTemplateDescriptor(FABRIC_MAIN_CLASS_TEMPLATAE, PlatformAssets.FABRIC_ICON))
+        group.addTemplate(FileTemplateDescriptor(FABRIC_MIXINS_JSON_TEMPLATE, PlatformAssets.FABRIC_ICON))
+        group.addTemplate(FileTemplateDescriptor(FABRIC_MOD_JSON_TEMPLATE, PlatformAssets.FABRIC_ICON))
+
         group.addTemplate(FileTemplateDescriptor(MIXIN_OVERWRITE_FALLBACK, PlatformAssets.MIXIN_ICON))
 
         return group
@@ -100,6 +107,13 @@ class MinecraftFileTemplateGroupFactory : FileTemplateGroupDescriptorFactory {
         const val LITELOADER_BUILD_GRADLE_TEMPLATE = "liteloader_build.gradle"
         const val LITELOADER_SUBMODULE_BUILD_GRADLE_TEMPLATE = "liteloader_submodule_build.gradle"
         const val LITELOADER_MAIN_CLASS_TEMPLATE = "liteloader_main_class.java"
+
+        const val FABRIC_BUILD_GRADLE_TEMPLATE = "fabric_build.gradle"
+        const val FABRIC_CLIENT_CLASS_TEMPLATE = "fabric_client_class.java"
+        const val FABRIC_GRADLE_PROPERTIES_TEMPLATE = "fabric_gradle.properties"
+        const val FABRIC_MAIN_CLASS_TEMPLATAE = "fabric_main_class.java"
+        const val FABRIC_MIXINS_JSON_TEMPLATE = "fabric_mixins.json"
+        const val FABRIC_MOD_JSON_TEMPLATE = "fabric_mod.json"
 
         const val MIXIN_OVERWRITE_FALLBACK = "Mixin Overwrite Fallback.java"
     }

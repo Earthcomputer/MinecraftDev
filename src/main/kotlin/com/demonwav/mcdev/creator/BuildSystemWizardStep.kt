@@ -16,6 +16,7 @@ import com.demonwav.mcdev.buildsystem.maven.MavenBuildSystem
 import com.demonwav.mcdev.exception.EmptyFieldSetupException
 import com.demonwav.mcdev.exception.OtherSetupException
 import com.demonwav.mcdev.exception.SetupException
+import com.demonwav.mcdev.platform.fabric.FabricProjectConfiguration
 import com.demonwav.mcdev.platform.forge.ForgeProjectConfiguration
 import com.demonwav.mcdev.platform.liteloader.LiteLoaderProjectConfiguration
 import com.demonwav.mcdev.platform.sponge.SpongeProjectConfiguration
@@ -45,7 +46,9 @@ class BuildSystemWizardStep(private val creator: MinecraftProjectCreator) : Modu
             return
         }
         when {
-            creator.configs.any { s -> s is ForgeProjectConfiguration || s is LiteLoaderProjectConfiguration } -> {
+            creator.configs.any { s -> s is ForgeProjectConfiguration
+                    || s is LiteLoaderProjectConfiguration
+                    || s is FabricProjectConfiguration } -> {
                 buildSystemBox.selectedIndex = 1
                 buildSystemBox.setVisible(false)
             }

@@ -1,0 +1,58 @@
+#set ( $d = "$" )
+{
+  "schemaVersion": 1,
+  "id": "${ARTIFACT_ID}",
+  "version": "${d}{version}",
+
+  "name": "${MOD_NAME}",
+  #if (${MOD_DESCRIPTION})
+  "description": "${MOD_DESCRIPTION}",
+  #end
+  #if (${MOD_AUTHORS})
+  "authors": [
+    "${MOD_AUTHORS}"
+  ],
+  #end
+  #if (${MOD_HOMEPAGE} || ${MOD_REPO})
+  "contact": {
+    #if (${MOD_HOMEPAGE})
+    "homepage": "${MOD_HOMEPAGE}"#if (${MOD_REPO}),#end
+    #end
+    #if (${MOD_REPO})
+    "sources": "${MOD_REPO}"
+    #end
+  },
+  #end
+
+  "license": "CC0-1.0",
+  "icon": "assets/${ARTIFACT_ID}/icon.png",
+
+  "environment": "${MOD_ENVIRONMENT}",
+  #if (${CLASS_NAME} || ${CLIENT_CLASS_NAME})
+  "entrypoints": {
+    #if (${CLASS_NAME})
+    "main": [
+      "${CLASS_NAME}"
+    ]#if (${CLIENT_CLASS_NAME}),#end
+    #end
+    #if (${CLIENT_CLASS_NAME})
+    "client": [
+      "${CLIENT_CLASS_NAME}"
+    ]
+    #end
+  },
+  #end
+  #if (${MIXINS})
+  "mixins": [
+    "${ARTIFACT_ID}.mixins.json"
+  ],
+  #end
+
+  "depends": {
+    "fabricloader": ">=${LOADER_VERSION}",
+    #if (${API_VERSION})
+    "fabric": "*",
+    #end
+    "minecraft": "${MC_VERSION}"
+  }
+}

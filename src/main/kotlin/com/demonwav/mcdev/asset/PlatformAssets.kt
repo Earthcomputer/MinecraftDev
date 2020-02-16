@@ -38,6 +38,9 @@ object PlatformAssets : Assets() {
     val LITELOADER_ICON = loadIcon("/assets/icons/platform/LiteLoader.png")
     val LITELOADER_ICON_2X = loadIcon("/assets/icons/platform/LiteLoader@2x.png")
 
+    val FABRIC_ICON = loadIcon("/assets/icons/platform/Fabric.png")
+    val FABRIC_ICON_2X = loadIcon("/assets/icons/platform/Fabric@2x.png")
+
     val MIXIN_ICON = loadIcon("/assets/icons/platform/Mixins.png")
     val MIXIN_ICON_2X = loadIcon("/assets/icons/platform/Mixins@2x.png")
     val MIXIN_ICON_DARK = loadIcon("/assets/icons/platform/Mixins_dark.png")

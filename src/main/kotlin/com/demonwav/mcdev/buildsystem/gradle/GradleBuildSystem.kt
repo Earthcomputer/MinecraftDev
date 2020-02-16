@@ -14,6 +14,8 @@ import com.demonwav.mcdev.buildsystem.BuildSystem
 import com.demonwav.mcdev.platform.BaseTemplate
 import com.demonwav.mcdev.platform.PlatformType
 import com.demonwav.mcdev.platform.ProjectConfiguration
+import com.demonwav.mcdev.platform.fabric.FabricProjectConfiguration
+import com.demonwav.mcdev.platform.fabric.FabricTemplate
 import com.demonwav.mcdev.platform.forge.ForgeModuleType
 import com.demonwav.mcdev.platform.forge.ForgeProjectConfiguration
 import com.demonwav.mcdev.platform.forge.ForgeTemplate
@@ -92,6 +94,7 @@ class GradleBuildSystem(
         when (configuration) {
             is ForgeProjectConfiguration -> handleForgeCreate(descriptor, configuration, indicator)
             is LiteLoaderProjectConfiguration -> handleLiteLoaderCreate(descriptor, configuration, indicator)
+            is FabricProjectConfiguration -> handleFabricCreate(descriptor, configuration, indicator)
             else -> handleGeneralCreate(descriptor, configuration, indicator)
         }
 
@@ -145,6 +148,23 @@ class GradleBuildSystem(
 
         setupWrapper(descriptor, indicator, FG_WRAPPER_VERSION)
         setupDecompWorkspace(descriptor, indicator)
+    }
+
+    private fun handleFabricCreate(
+        descriptor: ProjectDescriptor,
+        configuration: FabricProjectConfiguration,
+        indicator: ProgressIndicator
+    ) {
+        runWriteTask {
+            val (buildGradle, gradleProp) = setupGradleFiles(descriptor.rootDirectory)
+
+            FabricTemplate.applyBuildGradleTemplate(
+                descriptor.project, buildGradle, gradleProp, groupId, artifactId, configuration
+            )
+        }
+
+        setupWrapper(descriptor, indicator)
+        genSources(descriptor, indicator)
     }
 
     private fun handleGeneralCreate(
@@ -202,6 +222,12 @@ class GradleBuildSystem(
     private fun setupDecompWorkspace(descriptor: ProjectDescriptor, indicator: ProgressIndicator) {
         runGradleTask(descriptor, indicator) { launcher ->
             launcher.forTasks("setupDecompWorkspace").setJvmArguments("-Xmx2G")
+        }
+    }
+
+    private fun genSources(descriptor: ProjectDescriptor, indicator: ProgressIndicator) {
+        runGradleTask(descriptor, indicator) { launcher ->
+            launcher.forTasks("genSources")
         }
     }
 

@@ -58,7 +58,7 @@ class BungeeCordProjectConfiguration(override var type: PlatformType) : ProjectC
             val files = baseConfig.mainClass.split(".").toTypedArray()
             val className = files.last()
             val packageName = baseConfig.mainClass.substring(0, baseConfig.mainClass.length - className.length - 1)
-            file = getMainClassDirectory(files, file)
+            file = getOrCreateDirectories(files, file)
 
             val mainClassFile = file.findOrCreateChildData(this, "$className.java")
 

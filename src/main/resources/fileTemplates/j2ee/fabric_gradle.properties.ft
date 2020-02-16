@@ -1,0 +1,23 @@
+# Done to increase the memory available to gradle.
+org.gradle.jvmargs=-Xmx1G
+
+# Fabric Properties
+    # check these on https://fabricmc.net/use
+    minecraft_version=${MC_VERSION}
+    yarn_mappings=${YARN_MAPPINGS}
+    loader_version=${LOADER_VERSION}
+
+# Mod Properties
+#if (${VERSION})
+    mod_version = ${VERSION}
+#else
+    mod_version = 1.0.0
+#end
+    maven_group = ${GROUP_ID}
+    archives_base_name = ${ARTIFACT_ID}
+#if (${API_VERSION})
+
+# Dependencies
+    # currently not on the main fabric site, check on the maven: https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api
+    fabric_version=${API_VERSION}
+#end

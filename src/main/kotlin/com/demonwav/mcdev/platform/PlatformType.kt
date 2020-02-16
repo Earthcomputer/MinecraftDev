@@ -20,6 +20,7 @@ import com.demonwav.mcdev.platform.bungeecord.BungeeCordModuleType
 import com.demonwav.mcdev.platform.bungeecord.WaterfallModuleType
 import com.demonwav.mcdev.platform.bungeecord.framework.BUNGEECORD_LIBRARY_KIND
 import com.demonwav.mcdev.platform.bungeecord.framework.WATERFALL_LIBRARY_KIND
+import com.demonwav.mcdev.platform.fabric.FabricModuleType
 import com.demonwav.mcdev.platform.forge.ForgeModuleType
 import com.demonwav.mcdev.platform.forge.framework.FORGE_LIBRARY_KIND
 import com.demonwav.mcdev.platform.liteloader.LiteLoaderModuleType
@@ -47,6 +48,7 @@ enum class PlatformType(
     WATERFALL(WaterfallModuleType, "Waterfall", "waterfall.json"),
     BUNGEECORD(BungeeCordModuleType, "BungeeCord", "bungeecord.json", arrayOf(WATERFALL)),
     LITELOADER(LiteLoaderModuleType, "LiteLoader"),
+    FABRIC(FabricModuleType, "Fabric"),
     MIXIN(MixinModuleType, "Mixin"),
     MCP(McpModuleType, "MCP");
 

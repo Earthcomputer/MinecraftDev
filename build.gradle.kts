@@ -78,6 +78,7 @@ repositories {
     maven("https://dl.bintray.com/minecraft-dev/maven")
     maven("https://repo.spongepowered.org/maven")
     maven("https://jetbrains.bintray.com/intellij-third-party-dependencies")
+    maven("https://maven.extracraftx.com")
 }
 
 // Sources aren't provided through the gradle intellij plugin for bundled libs, use compileOnly to attach them
@@ -99,6 +100,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:$coroutineVersion") {
         isTransitive = false
     }
+
+    implementation("com.extracraftx.minecraft:TemplateMakerFabric:0.1.0")
 
     jflex("org.jetbrains.idea:jflex:1.7.0-b7f882a")
     jflexSkeleton("org.jetbrains.idea:jflex:1.7.0-c1fdf11:idea@skeleton")

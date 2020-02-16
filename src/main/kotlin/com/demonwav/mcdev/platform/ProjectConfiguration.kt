@@ -67,7 +67,7 @@ abstract class ProjectConfiguration {
         return list?.size != 0
     }
 
-    protected fun getMainClassDirectory(files: Array<String>, file: VirtualFile): VirtualFile {
+    protected fun getOrCreateDirectories(files: Array<String>, file: VirtualFile): VirtualFile {
         var movingFile = file
         for (i in 0 until (files.size - 1)) {
             val s = files[i]
