@@ -101,7 +101,7 @@ dependencies {
         isTransitive = false
     }
 
-    implementation("com.extracraftx.minecraft:TemplateMakerFabric:0.1.0")
+    implementation("com.extracraftx.minecraft:TemplateMakerFabric:0.2.1")
 
     jflex("org.jetbrains.idea:jflex:1.7.0-b7f882a")
     jflexSkeleton("org.jetbrains.idea:jflex:1.7.0-c1fdf11:idea@skeleton")

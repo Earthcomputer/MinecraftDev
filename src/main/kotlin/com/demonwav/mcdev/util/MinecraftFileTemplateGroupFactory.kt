@@ -66,6 +66,7 @@ class MinecraftFileTemplateGroupFactory : FileTemplateGroupDescriptorFactory {
         group.addTemplate(FileTemplateDescriptor(FABRIC_MAIN_CLASS_TEMPLATAE, PlatformAssets.FABRIC_ICON))
         group.addTemplate(FileTemplateDescriptor(FABRIC_MIXINS_JSON_TEMPLATE, PlatformAssets.FABRIC_ICON))
         group.addTemplate(FileTemplateDescriptor(FABRIC_MOD_JSON_TEMPLATE, PlatformAssets.FABRIC_ICON))
+        group.addTemplate(FileTemplateDescriptor(FABRIC_SETTINGS_GRADLE_TEMPLATE, PlatformAssets.FABRIC_ICON))
 
         group.addTemplate(FileTemplateDescriptor(MIXIN_OVERWRITE_FALLBACK, PlatformAssets.MIXIN_ICON))
 
@@ -114,6 +115,7 @@ class MinecraftFileTemplateGroupFactory : FileTemplateGroupDescriptorFactory {
         const val FABRIC_MAIN_CLASS_TEMPLATAE = "fabric_main_class.java"
         const val FABRIC_MIXINS_JSON_TEMPLATE = "fabric_mixins.json"
         const val FABRIC_MOD_JSON_TEMPLATE = "fabric_mod.json"
+        const val FABRIC_SETTINGS_GRADLE_TEMPLATE = "fabric_settings.gradle"
 
         const val MIXIN_OVERWRITE_FALLBACK = "Mixin Overwrite Fallback.java"
     }

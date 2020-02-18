@@ -176,7 +176,7 @@ class FabricProjectSettingsWizard(private val creator: MinecraftProjectCreator) 
         val loaderVer = loaderVersion
         if (loaderVer != null)
             conf.loaderVersion = loaderVer
-        conf.apiVersion = if (useFabricApiCheckbox.isSelected) fabricApiVersion else null
+        conf.apiVersion = if (useFabricApiCheckbox.isSelected) dataProvider?.fabricApiVersions?.firstOrNull { it.name == fabricApiVersion }?.mavenVersion else null
         conf.environment = Environment.byName(environmentBox.selectedItem as? String) ?: Environment.BOTH
         conf.mainClass = mainEntryPointField.text.let { if (it.isEmpty()) null else it }
         conf.clientClass = clientEntryPointField.text.let { if (it.isEmpty()) null else it }
@@ -255,8 +255,7 @@ class FabricProjectSettingsWizard(private val creator: MinecraftProjectCreator) 
                 loomVersion ?: return
             }
             else -> {
-                val defaultLoom = yarnVerObj?.let { dp.getDefaultLoomVersion(it) }
-                dp.loomVersions.firstOrNull { it.originalIndex == defaultLoom }?.simpleName
+                yarnVerObj?.let { dp.getDefaultLoomVersion(it) }?.simpleName
             }
         }
         val loomVerObj = dp.loomVersions.firstOrNull { it.simpleName == loomVer }

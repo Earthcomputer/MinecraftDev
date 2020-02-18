@@ -157,9 +157,10 @@ class GradleBuildSystem(
     ) {
         runWriteTask {
             val (buildGradle, gradleProp) = setupGradleFiles(descriptor.rootDirectory)
+            val settingsGradle = descriptor.rootDirectory.findOrCreateChildData(this, "settings.gradle")
 
             FabricTemplate.applyBuildGradleTemplate(
-                descriptor.project, buildGradle, gradleProp, groupId, artifactId, configuration
+                descriptor.project, buildGradle, gradleProp, settingsGradle, groupId, artifactId, configuration
             )
         }
 
@@ -226,8 +227,13 @@ class GradleBuildSystem(
     }
 
     private fun genSources(descriptor: ProjectDescriptor, indicator: ProgressIndicator) {
-        runGradleTask(descriptor, indicator) { launcher ->
-            launcher.forTasks("genSources")
+        try {
+            runGradleTask(descriptor, indicator) { launcher ->
+                launcher.forTasks("genSources")
+            }
+        } catch (e: Throwable) {
+            // non-fatal
+            // TODO: give warning when genSources fails
         }
     }
 
