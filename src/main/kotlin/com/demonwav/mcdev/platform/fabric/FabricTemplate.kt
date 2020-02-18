@@ -20,7 +20,10 @@ import java.util.*
 object FabricTemplate {
 
     private fun Properties.setNullable(key: String, value: String?) {
-        value?.let { this.setProperty(key, it) }
+        value?.let {
+            if (it.isNotBlank())
+                this.setProperty(key, it)
+        }
     }
 
     fun applyBuildGradleTemplate(
@@ -38,8 +41,10 @@ object FabricTemplate {
         properties.setNullable("VERSION", configuration.base?.pluginVersion)
         properties.setNullable("MC_VERSION", configuration.mcVersion)
         properties.setNullable("YARN_MAPPINGS", configuration.yarnVersion)
+        properties.setNullable("YARN_CLASSIFIER", configuration.yarnClassifier)
         properties.setNullable("LOADER_VERSION", configuration.loaderVersion)
         properties.setNullable("API_VERSION", configuration.apiVersion)
+        properties.setNullable("API_MAVEN_LOCATION", configuration.apiMavenLocation)
         properties.setNullable("LOOM_VERSION", configuration.gradleLoomVersion)
 
         BaseTemplate.applyTemplate(
@@ -69,11 +74,18 @@ object FabricTemplate {
         file: VirtualFile,
         templateName: String,
         packageName: String,
-        className: String
+        className: String,
+        interfaces: List<String>
     ) {
         val properties = Properties()
         properties.setNullable("PACKAGE_NAME", packageName)
         properties.setNullable("CLASS_NAME", className)
+        properties.setNullable("IMPORTS", interfaces
+                .map { it.removeRange(it.lastIndexOf('.'), it.length) }
+                .distinct()
+                .joinToString("\n") { "import $it;" })
+        properties.setNullable("INTERFACES", interfaces.distinct()
+                .joinToString(", ") { it.substring(it.lastIndexOf('.') + 1) })
         BaseTemplate.applyTemplate(project, file, templateName, properties)
     }
 
@@ -89,17 +101,22 @@ object FabricTemplate {
         properties.setNullable("MOD_NAME", baseConfigs.pluginName)
         properties.setNullable("MOD_DESCRIPTION", baseConfigs.description)
         if (baseConfigs.authors.size != 0) {
-            properties.setNullable("MOD_AUTHORS", baseConfigs.authors.map { "\"$it\"" }.joinToString(", "))
+            properties.setNullable("MOD_AUTHORS", baseConfigs.authors.joinToString(", ") { "\"$it\"" })
         }
         properties.setNullable("MOD_HOMEPAGE", baseConfigs.website)
         properties.setNullable("MOD_REPO", config.modRepo)
         properties.setNullable("MOD_ENVIRONMENT", config.environment.pattern)
-        properties.setNullable("CLASS_NAME", config.mainClass)
-        properties.setNullable("CLIENT_CLASS_NAME", config.clientClass)
+        val entryPoints = config.entryPoints.groupBy { it.name }.entries.joinToString(",\n") { entry ->
+            val elements = entry.value.joinToString(",\n") { "\"${it.clazz}\"" }
+            "\"${entry.key}\": [\n$elements\n]"
+        }
+        if (config.entryPoints.isNotEmpty())
+            properties.setNullable("ENTRY_POINTS", entryPoints)
         properties.setNullable("MIXINS", if (config.mixins) "true" else null)
         properties.setNullable("LOADER_VERSION", config.loaderVersion)
         properties.setNullable("API_VERSION", config.apiVersion)
         properties.setNullable("MC_VERSION", config.mcVersion)
+        properties.setNullable("NORMALIZED_MC_VERSION", config.mcVersion)
 
         BaseTemplate.applyTemplate(
             project,

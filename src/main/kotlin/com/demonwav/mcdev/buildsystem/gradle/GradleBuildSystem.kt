@@ -164,8 +164,9 @@ class GradleBuildSystem(
             )
         }
 
-        setupWrapper(descriptor, indicator)
-        genSources(descriptor, indicator)
+        setupWrapper(descriptor, indicator, configuration.gradleVersion)
+        if (configuration.genSources)
+            genSources(descriptor, indicator)
     }
 
     private fun handleGeneralCreate(
@@ -465,7 +466,7 @@ class GradleBuildSystem(
         val wrapperVersion = if (configurations.any { configurationUsesForgeGradle(it) }) {
             FG_WRAPPER_VERSION
         } else {
-            DEFAULT_WRAPPER_VERSION
+            (configurations.firstOrNull { it is FabricProjectConfiguration } as? FabricProjectConfiguration)?.gradleVersion ?: DEFAULT_WRAPPER_VERSION
         }
         setupWrapper(ProjectDescriptor(rootDirectory, project), indicator, wrapperVersion)
 

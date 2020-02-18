@@ -10,7 +10,7 @@
   #end
   #if (${MOD_AUTHORS})
   "authors": [
-    "${MOD_AUTHORS}"
+    ${MOD_AUTHORS}
   ],
   #end
   #if (${MOD_HOMEPAGE} || ${MOD_REPO})
@@ -28,18 +28,9 @@
   "icon": "assets/${ARTIFACT_ID}/icon.png",
 
   "environment": "${MOD_ENVIRONMENT}",
-  #if (${CLASS_NAME} || ${CLIENT_CLASS_NAME})
+  #if (${ENTRY_POINTS})
   "entrypoints": {
-    #if (${CLASS_NAME})
-    "main": [
-      "${CLASS_NAME}"
-    ]#if (${CLIENT_CLASS_NAME}),#end
-    #end
-    #if (${CLIENT_CLASS_NAME})
-    "client": [
-      "${CLIENT_CLASS_NAME}"
-    ]
-    #end
+    ${ENTRY_POINTS}
   },
   #end
   #if (${MIXINS})
@@ -51,8 +42,10 @@
   "depends": {
     "fabricloader": ">=${LOADER_VERSION}",
     #if (${API_VERSION})
-    "fabric": "*",
+    "fabric": "*"#if (${NORMALIZED_MC_VERSION}),#end
     #end
-    "minecraft": "${MC_VERSION}"
+    #if (${NORMALIZED_MC_VERSION})
+    "minecraft": "${NORMALIZED_MC_VERSION}",
+    #end
   }
 }

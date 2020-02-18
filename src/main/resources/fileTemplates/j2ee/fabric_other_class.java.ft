@@ -1,0 +1,9 @@
+package ${PACKAGE_NAME};
+
+${IMPORTS}
+
+public class ${CLASS_NAME} implements ${INTERFACES} {
+
+
+
+}

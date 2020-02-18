@@ -1,6 +1,6 @@
 #set ( $d = "$" )
 plugins {
-    id 'fabric-loom' version '${LOOM_VERSION}-SNAPSHOT'
+    id 'fabric-loom' version '${LOOM_VERSION}'
     id 'maven-publish'
 }
 
@@ -16,11 +16,11 @@ minecraft {
 
 dependencies {
     minecraft "com.mojang:minecraft:${d}{project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${d}{project.yarn_mappings}:v2"
+    mappings "net.fabricmc:yarn:${d}{project.yarn_mappings}#if (${YARN_CLASSIFIER}):${YARN_CLASSIFIER}#end"
     modCompile "net.fabricmc:fabric-loader:${d}{project.loader_version}"
 #if (${API_VERSION})
 
-    modCompile "net.fabricmc.fabric-api:fabric-api:${d}{project.fabric_version}"
+    modCompile "${API_MAVEN_LOCATION}:${d}{project.fabric_version}"
 #end
 }
 

@@ -26,15 +26,19 @@ import com.intellij.psi.PsiManager
 class FabricProjectConfiguration : ProjectConfiguration() {
 
     var yarnVersion = ""
+    var yarnClassifier: String? = "v2"
     var mcVersion = ""
+    var normalizedMcVersion: String? = null
     var loaderVersion = "0.7.8+build.184"
     var apiVersion: String? = null
+    var apiMavenLocation: String? = null
     var gradleLoomVersion = "0.2.6"
+    var gradleVersion = "5.5.1"
     var environment = Environment.BOTH
-    var mainClass: String? = null
-    var clientClass: String? = null
+    var entryPoints: List<EntryPoint> = arrayListOf()
     var modRepo: String? = null
     var mixins = false
+    var genSources = true
 
     override var type = PlatformType.FABRIC
 
@@ -49,8 +53,21 @@ class FabricProjectConfiguration : ProjectConfiguration() {
         runWriteTask {
             indicator.text = "Writing main class"
 
-            val mainClassFile = writeClass(project, dirs, mainClass, MinecraftFileTemplateGroupFactory.FABRIC_MAIN_CLASS_TEMPLATAE)
-            val clientClassFile = writeClass(project, dirs, clientClass, MinecraftFileTemplateGroupFactory.FABRIC_CLIENT_CLASS_TEMPLATE)
+            var mainClassName: String? = null
+            var fileToOpen: VirtualFile? = null
+            for (entryPoint in entryPoints.distinctBy { it.clazz }) {
+                val interfaces = entryPoint.interfaces.split(",").map { it.trim() }
+                val templateName = when {
+                    interfaces.contains(FabricConstants.MOD_INITIALIZER) -> MinecraftFileTemplateGroupFactory.FABRIC_MAIN_CLASS_TEMPLATAE
+                    interfaces.contains(FabricConstants.CLIENT_MOD_INITIALIZER) -> MinecraftFileTemplateGroupFactory.FABRIC_CLIENT_CLASS_TEMPLATE
+                    else -> MinecraftFileTemplateGroupFactory.FABRIC_OTHER_CLASS_TEMPLATE
+                }
+                val classFile = writeClass(project, dirs, entryPoint.clazz, interfaces, templateName)
+                if (fileToOpen == null) {
+                    mainClassName = entryPoint.clazz
+                    fileToOpen = classFile
+                }
+            }
 
             FabricTemplate.applyModJsonTemplate(
                 project,
@@ -61,7 +78,7 @@ class FabricProjectConfiguration : ProjectConfiguration() {
             )
 
             if (mixins) {
-                val packageName = (mainClass ?: clientClass)
+                val packageName = mainClassName
                         ?.let { it.removeRange(it.lastIndexOf('.'), it.length) }
                         ?: "${buildSystem.groupId}.${buildSystem.artifactId}"
 
@@ -74,7 +91,7 @@ class FabricProjectConfiguration : ProjectConfiguration() {
                 getOrCreateDirectories(packageName.split(".").toTypedArray(), dirs.sourceDirectory)
             }
 
-            (mainClassFile ?: clientClassFile)?.let { file ->
+            fileToOpen?.let { file ->
                 PsiManager.getInstance(project).findFile(file)?.let {mainClassPsi ->
                     EditorHelper.openInEditor(mainClassPsi)
                 }
@@ -86,6 +103,7 @@ class FabricProjectConfiguration : ProjectConfiguration() {
         project: Project,
         dirs: BuildSystem.DirectorySet,
         clazz: String?,
+        interfaces: List<String>,
         templateName: String
     ): VirtualFile? {
         if (clazz == null)
@@ -98,7 +116,7 @@ class FabricProjectConfiguration : ProjectConfiguration() {
         file = getOrCreateDirectories(files, file)
 
         val mainClassFile = file.findOrCreateChildData(this, "$className.java")
-        FabricTemplate.applyMainClassTemplate(project, mainClassFile, templateName, packageName, className)
+        FabricTemplate.applyMainClassTemplate(project, mainClassFile, templateName, packageName, className, interfaces)
 
         return mainClassFile
     }

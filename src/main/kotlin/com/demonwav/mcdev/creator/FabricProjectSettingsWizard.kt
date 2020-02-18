@@ -13,25 +13,32 @@ package com.demonwav.mcdev.creator
 import com.demonwav.mcdev.asset.PlatformAssets
 import com.demonwav.mcdev.platform.PlatformType
 import com.demonwav.mcdev.platform.ProjectConfiguration
+import com.demonwav.mcdev.platform.fabric.EntryPoint
 import com.demonwav.mcdev.platform.fabric.Environment
+import com.demonwav.mcdev.platform.fabric.FabricConstants
 import com.demonwav.mcdev.platform.fabric.FabricProjectConfiguration
 import com.demonwav.mcdev.util.firstOfType
 import com.extracraftx.minecraft.templatemakerfabric.data.DataProvider
-import com.extracraftx.minecraft.templatemakerfabric.data.holders.LoomVersion
 import com.intellij.ui.CollectionComboBoxModel
+import com.intellij.ui.ToolbarDecorator
+import com.intellij.ui.table.JBTable
+import com.intellij.util.ui.EditableModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import org.apache.commons.lang.WordUtils
 import java.awt.event.ActionListener
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.io.IOException
+import java.util.*
 import javax.swing.*
+import javax.swing.table.AbstractTableModel
 
 class FabricProjectSettingsWizard(private val creator: MinecraftProjectCreator) : MinecraftModuleWizardStep() {
 
+    // Initialize ALL custom fields in createUIComponents, otherwise they are null until after that point!
     private lateinit var modNameField: JTextField
     private lateinit var modVersionField: JTextField
-    private lateinit var mainEntryPointField: JTextField
-    private lateinit var clientEntryPointField: JTextField
     private lateinit var panel: JPanel
     private lateinit var title: JLabel
     private lateinit var descriptionField: JTextField
@@ -46,8 +53,12 @@ class FabricProjectSettingsWizard(private val creator: MinecraftProjectCreator) 
     private lateinit var fabricApiBox: JComboBox<String>
     private lateinit var environmentBox: JComboBox<String>
     private lateinit var mixinsCheckbox: JCheckBox
+    private lateinit var decompileMcCheckbox: JCheckBox
     private lateinit var loadingBar: JProgressBar
     private lateinit var minecraftVersionLabel: JLabel
+    private lateinit var entryPointsTable: JPanel
+    private lateinit var entryPoints : ArrayList<EntryPoint>
+    private lateinit var tableModel : EntryPointTableModel
     private lateinit var yarnWarning: JLabel
     private lateinit var errorLabel: JLabel
 
@@ -57,28 +68,36 @@ class FabricProjectSettingsWizard(private val creator: MinecraftProjectCreator) 
 
     private var currentJob: Job? = null
 
-    private val yarnBoxActionListener = ActionListener {
-        val selectedVersion = yarnVersionBox.selectedItem as? String ?: return@ActionListener
-        yarnWarning.isVisible = (dataProvider
-                ?.yarnVersions
-                ?.firstOrNull { it.name == selectedVersion }
-                ?.mcVersion != minecraftVersionBox.selectedItem)
-    }
-
     private val minecraftBoxActionListener: ActionListener = ActionListener {
-        CoroutineScope(Dispatchers.Swing).launch {
-            loadingBar.isIndeterminate = true
-            loadingBar.isVisible = true
-
-            updateForm()
-
-            loadingBar.isIndeterminate = false
-            loadingBar.isVisible = false
-        }
+        yarnVersionBox.selectedItem = null
+        loaderVersionBox.selectedItem = null
+        loomVersionBox.selectedItem = null
+        fabricApiBox.selectedItem = null
+        updateForm()
     }
 
     init {
         yarnWarning.isVisible = false
+    }
+
+    fun createUIComponents() {
+        entryPoints = arrayListOf()
+        tableModel = EntryPointTableModel(entryPoints)
+        val entryPointsTable = JBTable(tableModel)
+        fun resizeColumns() {
+            val model = entryPointsTable.columnModel
+            val totalWidth = model.totalColumnWidth
+            model.getColumn(0).preferredWidth = (totalWidth * 0.2).toInt()
+            model.getColumn(1).preferredWidth = (totalWidth * 0.4).toInt()
+            model.getColumn(2).preferredWidth = (totalWidth * 0.4).toInt()
+        }
+        resizeColumns()
+        entryPointsTable.addComponentListener(object : ComponentAdapter() {
+            override fun componentResized(e: ComponentEvent?) {
+                resizeColumns()
+            }
+        })
+        this.entryPointsTable = ToolbarDecorator.createDecorator(entryPointsTable).createPanel()
     }
 
     override fun getComponent(): JComponent {
@@ -100,13 +119,14 @@ class FabricProjectSettingsWizard(private val creator: MinecraftProjectCreator) 
             modVersionField.isEditable = false
         }
 
-        mainEntryPointField.text = buildSystem.groupId.replace("-", "").toLowerCase() + "." +
-                buildSystem.artifactId.replace("-", "").toLowerCase() + "." +
-                WordUtils.capitalize(buildSystem.artifactId.replace('-', ' ')).replace(" ", "")
-
-        if (creator.configs.size > 1) {
-            mainEntryPointField.text = mainEntryPointField.text + PlatformType.FABRIC.normalName
-        }
+        val packageName = "${buildSystem.groupId.replace("-", "").toLowerCase()}.${buildSystem.artifactId.replace("-", "").toLowerCase()}"
+        var className = buildSystem.artifactId.replace('-', ' ').let { WordUtils.capitalize(it) }.replace(" ", "")
+        if (creator.configs.size > 1)
+            className += PlatformType.FABRIC.normalName
+        entryPoints.add(EntryPoint("main", "$packageName.$className", FabricConstants.MOD_INITIALIZER))
+        entryPoints.add(EntryPoint("client", "", FabricConstants.CLIENT_MOD_INITIALIZER))
+        tableModel.fireTableDataChanged()
+        entryPointsTable.revalidate()
 
         title.icon = PlatformAssets.FABRIC_ICON_2X
         title.text = "<html><font size=\"5\">Fabric Settings</font></html>"
@@ -134,14 +154,11 @@ class FabricProjectSettingsWizard(private val creator: MinecraftProjectCreator) 
     private val fabricApiVersion: String?
         get() = fabricApiBox.selectedItem as? String
 
-    private val LoomVersion.simpleName: String
-        get() = this.name.substringBefore('+')
-
     override fun validate(): Boolean {
         return validate(
                 modNameField,
                 modVersionField,
-                mainEntryPointField,
+                null,
                 authorsField,
                 null,
                 pattern
@@ -163,7 +180,7 @@ class FabricProjectSettingsWizard(private val creator: MinecraftProjectCreator) 
         conf.base = ProjectConfiguration.BaseConfigs(
                 pluginName = modNameField.text,
                 pluginVersion = modVersionField.text,
-                mainClass = mainEntryPointField.text,
+                mainClass = "",
                 description = descriptionField.text,
                 website = websiteField.text
         )
@@ -172,15 +189,26 @@ class FabricProjectSettingsWizard(private val creator: MinecraftProjectCreator) 
         conf.modRepo = repositoryField.text
 
         conf.yarnVersion = yarnVersion ?: ""
+        conf.yarnClassifier = if (dataProvider?.yarnVersions?.firstOrNull { it.name == yarnVersion }?.hasV2Mappings == false) null else "v2"
         conf.mcVersion = mcVersion ?: ""
+        conf.normalizedMcVersion = dataProvider?.getNormalizedMinecraftVersion(mcVersion)?.normalized
         val loaderVer = loaderVersion
         if (loaderVer != null)
             conf.loaderVersion = loaderVer
-        conf.apiVersion = if (useFabricApiCheckbox.isSelected) dataProvider?.fabricApiVersions?.firstOrNull { it.name == fabricApiVersion }?.mavenVersion else null
+        val api = if (useFabricApiCheckbox.isSelected) dataProvider?.fabricApiVersions?.firstOrNull { it.name == fabricApiVersion } else null
+        conf.apiVersion = api?.mavenVersion
+        conf.apiMavenLocation = api?.mavenLocation
+        conf.gradleVersion = when (dataProvider?.loomVersions?.firstOrNull { it.name == loomVersion }?.gradle) {
+            4 -> "4.10.3"
+            else -> "5.5.1"
+        }
+        val loomVer = loomVersion
+        if (loomVer != null)
+            conf.gradleLoomVersion = loomVer
         conf.environment = Environment.byName(environmentBox.selectedItem as? String) ?: Environment.BOTH
-        conf.mainClass = mainEntryPointField.text.let { if (it.isEmpty()) null else it }
-        conf.clientClass = clientEntryPointField.text.let { if (it.isEmpty()) null else it }
+        conf.entryPoints = entryPoints.filter { it.valid }
         conf.mixins = mixinsCheckbox.isSelected
+        conf.genSources = decompileMcCheckbox.isSelected
     }
 
     fun error() {
@@ -255,10 +283,10 @@ class FabricProjectSettingsWizard(private val creator: MinecraftProjectCreator) 
                 loomVersion ?: return
             }
             else -> {
-                yarnVerObj?.let { dp.getDefaultLoomVersion(it) }?.simpleName
+                yarnVerObj?.let { dp.getDefaultLoomVersion(it) }?.name
             }
         }
-        val loomVerObj = dp.loomVersions.firstOrNull { it.simpleName == loomVer }
+        val loomVerObj = dp.loomVersions.firstOrNull { it.name == loomVer }
 
         val loaderVer = when {
             loaderVersion != null -> {
@@ -278,15 +306,17 @@ class FabricProjectSettingsWizard(private val creator: MinecraftProjectCreator) 
             else -> {
                 mcVerObj?.let { mvo ->
                     dp.getDefaultFabricApiVersion(mvo)
-                }?.let { dp.fabricApiVersions[it] }?.name
+                }?.let { dp.sortedFabricApiVersions[it] }?.name
             }
         }
 
+        minecraftVersionBox.removeActionListener(minecraftBoxActionListener)
         minecraftVersionBox.model = CollectionComboBoxModel(dp.minecraftVersions.map { it.name })
         minecraftVersionBox.selectedItem = mcVer
+        minecraftVersionBox.addActionListener(minecraftBoxActionListener)
         yarnVersionBox.model = CollectionComboBoxModel(dp.yarnVersions.map { it.name })
         yarnVersionBox.selectedItem = yarnVer
-        loomVersionBox.model = CollectionComboBoxModel(dp.loomVersions.map { it.simpleName })
+        loomVersionBox.model = CollectionComboBoxModel(dp.loomVersions.map { it.name })
         loomVersionBox.selectedItem = loomVer
         loaderVersionBox.model = CollectionComboBoxModel(dp.loaderVersions.map { it.name })
         loaderVersionBox.selectedItem = loaderVer
@@ -294,4 +324,49 @@ class FabricProjectSettingsWizard(private val creator: MinecraftProjectCreator) 
         fabricApiBox.selectedItem = fabricVer
         useFabricApiCheckbox.isSelected = fabricVer != null
     }
+
+    class EntryPointTableModel(private val entryPoints: ArrayList<EntryPoint>) : AbstractTableModel(), EditableModel {
+
+        override fun getColumnName(col: Int) = when (col) {
+            0 -> "Name"
+            1 -> "Class"
+            else -> "Interfaces"
+        }
+
+        override fun getRowCount() = entryPoints.size
+
+        override fun getColumnCount() = 3
+
+        override fun getValueAt(row: Int, col: Int) = when (col) {
+            0 -> entryPoints[row].name
+            1 -> entryPoints[row].clazz
+            else -> entryPoints[row].interfaces
+        }
+
+        override fun isCellEditable(row: Int, col: Int) = true
+
+        override fun setValueAt(value: Any?, row: Int, col: Int) {
+            when (col) {
+                0 -> entryPoints[row].name = value.toString()
+                1 -> entryPoints[row].clazz = value.toString()
+                2 -> entryPoints[row].interfaces = value.toString()
+            }
+            fireTableCellUpdated(row, col)
+        }
+
+        override fun removeRow(idx: Int) {
+            entryPoints.removeAt(idx)
+        }
+
+        override fun exchangeRows(oldIndex: Int, newIndex: Int) {
+            Collections.swap(entryPoints, oldIndex, newIndex)
+        }
+
+        override fun canExchangeRows(oldIndex: Int, newIndex: Int) = true
+
+        override fun addRow() {
+            entryPoints.add(EntryPoint("", "", ""))
+        }
+    }
+
 }
