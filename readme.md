@@ -3,24 +3,31 @@
 Minecraft Development for IntelliJ
 ==================================
 
-|        Service         |Status|
-|------------------------|------|
-|      **TeamCity**      |[![TeamCity Build Status](https://tc.demonwav.com/app/rest/builds/buildType:(id:MinecraftDev_Build)/statusIcon)](https://ci.demonwav.com/viewType.html?buildTypeId=MinecraftDev_Build)|
-|      **Nightly**       |[![TeamCity Nightly Status](https://tc.demonwav.com/app/rest/builds/buildType:(id:MinecraftDev_Nightly)/statusIcon)](https://ci.demonwav.com/viewType.html?buildTypeId=MinecraftDev_Nightly)|
-|   **Travis (Linux)**   |[![Travis Linux Build Status](https://travis-matrix-badges.herokuapp.com/repos/minecraft-dev/MinecraftDev/branches/dev/1)](https://travis-ci.org/minecraft-dev/MinecraftDev/)|
-|   **Travis (macOS)**   |[![Travis macOS Build Status](https://travis-matrix-badges.herokuapp.com/repos/minecraft-dev/MinecraftDev/branches/dev/2)](https://travis-ci.org/minecraft-dev/MinecraftDev/)|
-| **AppVeyor (Windows)** |[![AppVeyor Windows Build Status](https://ci.appveyor.com/api/projects/status/iuxeewnxgu4afmo6?svg=true)](https://ci.appveyor.com/project/DemonWav/minecraftdev)|
-
-Info and Documentation [![Current Release](https://img.shields.io/badge/release-2019.3--1.3.2-orange.svg?style=flat-square)](https://plugins.jetbrains.com/plugin/8327)
+Info and Documentation
 ----------------------
 
-<a href="https://discord.gg/j6UNcfr"><img src="https://i.imgur.com/JXu9C1G.png" height="48px"></img></a>
+This is Earthcomputer's fork of the Minecraft Development plugin for IntelliJ. The main additional features are:
+- Fabric project generation
 
-Visit [https://minecraftdev.org](https://minecraftdev.org) for a little information about the project.
+Planned features include:
+- Changing existing inspections to support Fabric naming
+- Making inspections more customizable, e.g. specifying methods for translations inspections to apply to
+- Bug fixes
+- Mixin generators
+- Further enhancements to mixin support
+
+Visit [https://minecraftdev.org](https://minecraftdev.org) for a little information about the official project.
 
 
 Installation
 ------------
+
+1. Go into the plugins menu in IntelliJ (Settings -> Plugins)
+1. Click the gear icon on the top, and click "Manage Plugin Repositories"
+1. Add a raw GitHub link to the update file in the [updates directory](https://github.com/Earthcomputer/MinecraftDev/tree/dev_new/updates), corresponding to the version of IntelliJ you have. For example, if you have 2019.3, use (https://raw.githubusercontent.com/Earthcomputer/MinecraftDev/dev_new/updates/updatePlugins-193.xml)[https://raw.githubusercontent.com/Earthcomputer/MinecraftDev/dev_new/updates/updatePlugins-193.xml]
+1. MinecraftDev should now show an update if you have the official version installed, which corresponds to Earth's edition of MinecraftDev. If you didn't have the official version installed, installing MinecraftDev will also install Earth's edition.
+
+### Installation instructions for the official project:
 
 This plugin is available on the [JetBrains IntelliJ plugin repository](https://plugins.jetbrains.com/plugin/8327).
 
@@ -105,3 +112,4 @@ Supported Platforms
 - [![MCP Icon](src/main/resources/assets/icons/platform/MCP.png?raw=true) **MCP**](http://www.modcoderpack.com/)
 - [![Mixins Icon](src/main/resources/assets/icons/platform/Mixins_dark.png?raw=true) **Mixins**](https://github.com/SpongePowered/Mixin)
 - [![BungeeCord Icon](src/main/resources/assets/icons/platform/BungeeCord.png?raw=true) **BungeeCord**](https://www.spigotmc.org/wiki/bungeecord/) ([![Waterfall Icon](src/main/resources/assets/icons/platform/Waterfall.png?raw=true) Waterfall](https://github.com/WaterfallMC))
+- [![Fabric Icon](src/main/resources/assets/icons/platform/Fabric.png?raw=true) **Fabric**](https://fabricmc.net/)
