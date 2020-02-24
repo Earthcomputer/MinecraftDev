@@ -8,11 +8,16 @@
  * MIT License
  */
 
+import groovy.util.IndentPrinter
+import java.io.StringWriter
+import java.util.Properties
+import groovy.util.Node
+import groovy.util.NodeList
+import groovy.xml.MarkupBuilder
 import net.minecrell.gradle.licenser.header.HeaderStyle
 import org.gradle.internal.jvm.Jvm
-import org.jetbrains.intellij.tasks.BuildSearchableOptionsTask
-import org.jetbrains.intellij.tasks.PublishTask
-import org.jetbrains.intellij.tasks.RunIdeTask
+import org.jetbrains.intellij.Utils
+import org.jetbrains.intellij.tasks.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
@@ -28,28 +33,44 @@ plugins {
     id("org.jetbrains.intellij") version "0.4.15"
     id("net.minecrell.licenser") version "0.4.1"
     id("org.jlleitschuh.gradle.ktlint") version "9.1.1"
+    `maven-publish`
 }
 
-group = "com.demonwav.minecraft-dev"
+val myCredentials = Properties()
+file("credentials.properties").let { if (it.exists()) myCredentials.load(it.bufferedReader()) }
+
+val ideaMajor: String by project
+val ideaMinor: String by project
+val ideaVersion = "$ideaMajor.$ideaMinor"
+val ideaSinceBuild: String by project
+val ideaUntilBuild: String by project
+val mcdevVersion: String by project
+val downloadIdeaSources: String by project
+val isPublish: String by project
+val desc: String by project
+val chNotes: String by project
+
+val projectGroup = "com.demonwav.minecraft-dev"
+group = projectGroup
+version = "$ideaVersion-$mcdevVersion"
+if (properties["buildNumber"] != null) {
+    version = "$version.${properties["buildNumber"]}"
+}
+val changeNotes0 = chNotes.replace("\$version", version as? String ?: "")
 
 val coroutineVersion = "1.2.1" // Coroutine version also kept in sync with IntelliJ's bundled dep
 
 defaultTasks("build")
-
-val ideaVersion: String by project
-val downloadIdeaSources: String by project
-
-// for publishing nightlies
-val repoToken: String by project
-val repoChannel: String by project
 
 val compileKotlin by tasks.existing
 val processResources by tasks.existing<AbstractCopyTask>()
 val test by tasks.existing<Test>()
 val runIde by tasks.existing<RunIdeTask>()
 val buildSearchableOptions by tasks.existing<BuildSearchableOptionsTask>()
-val publishPlugin by tasks.existing<PublishTask>()
+val buildPlugin by tasks.existing<Zip>()
+val verifyPlugin by tasks.existing<VerifyPluginTask>()
 val clean by tasks.existing<Delete>()
+val patchPluginXml by tasks.existing<PatchPluginXmlTask>()
 
 // configurations
 val idea by configurations
@@ -123,28 +144,106 @@ intellij {
     // IntelliJ IDEA dependency
     version = ideaVersion
     // Bundled plugin dependencies
+    var tomlVersion = "0.2.111.34-193"
+    if (ideaMajor.toInt() < 2019 || (ideaMajor.toInt() == 2019 && ideaMinor.toInt() <= 2))
+        tomlVersion = "0.2.0.25"
     setPlugins(
         "java", "maven", "gradle", "Groovy",
         // needed dependencies for unit tests
         "properties", "junit",
         // useful to have when running for mods.toml
-        "org.toml.lang:0.2.111.34-193"
+        "org.toml.lang:$tomlVersion"
     )
 
     pluginName = "Minecraft Development"
-    updateSinceUntilBuild = true
+    if (!isPublish.toBoolean())
+        updateSinceUntilBuild = true
 
     downloadSources = downloadIdeaSources.toBoolean()
 
     sandboxDirectory = project.rootDir.canonicalPath + "/.sandbox"
 }
 
-publishPlugin {
-    if (properties["publish"] != null) {
-        project.version = "${project.version}-${properties["buildNumber"]}"
+val patchUpdatePlugins = tasks.create("patchUpdatePlugins") {
+    val xmlFile = file("updates/updatePlugins-${ideaMajor.substring(2)}$ideaMinor.xml")
+    doLast {
+        Utils.warn(this, "Writing $xmlFile")
+        val sw = StringWriter()
+        val ip = IndentPrinter(sw)
+        ip.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+        val mkpBldr = MarkupBuilder(ip)
+        mkpBldr.withGroovyBuilder {
+            "plugins" {
+                "plugin"(mapOf(
+                    "id" to "com.demonwav.minecraft-dev",
+                    "url" to "https://dl.bintray.com/earthcomputer/mods/${projectGroup.replace(".", "/")}/minecraft-dev/$version/minecraft-dev-$version.zip",
+                    "version" to version
+                )) {
+                    "idea-version"(mapOf(
+                        "since-build" to ideaSinceBuild,
+                        "until-build" to ideaUntilBuild
+                    ))
+                    "name"("Minecraft Development")
+                    ip.println()
+                    ip.printIndent()
+                    ip.print("<description>")
+                    ip.incrementIndent()
+                    desc.lines().let {
+                        ip.println(it[0])
+                        for (line in 1 until it.size - 1) {
+                            ip.printIndent()
+                            ip.println(it[line])
+                        }
+                        ip.decrementIndent()
+                        ip.printIndent()
+                        ip.print(it.last())
+                    }
+                    ip.println("</description>")
+                    ip.printIndent()
+                    ip.print("<change-notes>")
+                    ip.incrementIndent()
+                    changeNotes0.lines().let {
+                        ip.println(it[0])
+                        for (line in 1 until it.size - 1) {
+                            ip.printIndent()
+                            ip.println(it[line])
+                        }
+                        ip.decrementIndent()
+                        ip.printIndent()
+                        ip.print(it.last())
+                    }
+                    ip.println("</change-notes>")
+                }
+            }
+        }
+        xmlFile.writeText(sw.toString())
+    }
+}
 
-        token(repoToken)
-        channels(repoChannel)
+val doPublishPlugin = tasks.create("doPublishPlugin") {
+    dependsOn(buildPlugin)
+    dependsOn(verifyPlugin)
+    dependsOn(patchUpdatePlugins)
+}
+
+publishing {
+    publications {
+        register("mavenJava", MavenPublication::class) {
+            artifact(buildPlugin.get()) {
+                builtBy(doPublishPlugin)
+                artifactId = "minecraft-dev"
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url = uri("https://api.bintray.com/maven/earthcomputer/mods/minecraft-dev/")
+            credentials {
+                username = myCredentials.getProperty("bintrayUser", "foo")
+                password = myCredentials.getProperty("bintrayPass", "bar")
+            }
+        }
     }
 }
 
@@ -164,6 +263,46 @@ tasks.withType<KotlinCompile>().configureEach {
 
 tasks.withType<GroovyCompile>().configureEach {
     options.compilerArgs = listOf("-proc:none")
+}
+
+val prePatchPluginXml = tasks.create("prePatchPluginXml") {
+    val pluginXmlFiles = patchPluginXml.get().pluginXmlFiles
+    inputs.files("pluginXmlFiles", pluginXmlFiles)
+    val dependencyChanges = hashMapOf<String, String>()
+    inputs.property("dependencyChanges", dependencyChanges)
+    val destinationDir = File(project.buildDir, "prePatchedPluginXmlFiles")
+    outputs.dir(destinationDir)
+
+    doLast {
+        pluginXmlFiles.forEach { file ->
+            val pluginXml = Utils.parseXml(file) ?: return@doLast
+
+            (pluginXml.get("depends") as? NodeList)?.forEach {
+                (it as? Node)?.let { node ->
+                    ((node.value() as? String) ?: (node.value() as? NodeList)?.text())?.let { v ->
+                        dependencyChanges[v]?.let { newVal ->
+                            Utils.warn(this, "Pre-patch plugin.xml: dependency $v -> $newVal")
+                        }
+                        node.setValue(dependencyChanges.getOrDefault(v, v))
+                    }
+                }
+            }
+
+            PatchPluginXmlTask.writePatchedPluginXml(pluginXml, File(destinationDir, file.name))
+        }
+    }
+
+    if (ideaMajor.toInt() < 2019 || (ideaMajor.toInt() == 2019 && ideaMinor.toInt() <= 2))
+        dependencyChanges["com.intellij.gradle"] = "org.jetbrains.idea.gradle"
+}
+
+patchPluginXml {
+    dependsOn(prePatchPluginXml)
+    setPluginXmlFiles(pluginXmlFiles.files.map { File(File(project.buildDir, "prePatchedPluginXmlFiles"), it.name) })
+    sinceBuild(ideaSinceBuild)
+    untilBuild(ideaUntilBuild)
+    pluginDescription(desc)
+    changeNotes(changeNotes0)
 }
 
 processResources {

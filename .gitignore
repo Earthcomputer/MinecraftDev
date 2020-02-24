@@ -48,3 +48,6 @@ hs_err_pid*
 
 
 .DS_Store
+
+/credentials.properties
+/buildNumber.txt

@@ -23,16 +23,7 @@ import com.demonwav.mcdev.platform.liteloader.LiteLoaderProjectConfiguration
 import com.demonwav.mcdev.platform.liteloader.LiteLoaderTemplate
 import com.demonwav.mcdev.platform.sponge.SpongeProjectConfiguration
 import com.demonwav.mcdev.platform.sponge.SpongeTemplate
-import com.demonwav.mcdev.util.SemanticVersion
-import com.demonwav.mcdev.util.findDeclaredField
-import com.demonwav.mcdev.util.firstOfType
-import com.demonwav.mcdev.util.invokeDeclaredMethod
-import com.demonwav.mcdev.util.invokeLater
-import com.demonwav.mcdev.util.localFile
-import com.demonwav.mcdev.util.refreshFs
-import com.demonwav.mcdev.util.runWriteAction
-import com.demonwav.mcdev.util.runWriteTask
-import com.demonwav.mcdev.util.runWriteTaskLater
+import com.demonwav.mcdev.util.*
 import com.intellij.codeInsight.actions.ReformatCodeProcessor
 import com.intellij.execution.RunManager
 import com.intellij.ide.ui.UISettings
@@ -57,7 +48,6 @@ import org.gradle.tooling.BuildLauncher
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProgressListener
 import org.jetbrains.plugins.gradle.service.execution.GradleExternalTaskConfigurationType
-import org.jetbrains.plugins.gradle.service.project.open.linkAndRefreshGradleProject
 import org.jetbrains.plugins.gradle.util.GradleConstants
 import org.jetbrains.plugins.groovy.GroovyLanguage
 import org.jetbrains.plugins.groovy.lang.psi.GroovyFile
@@ -369,8 +359,7 @@ class GradleBuildSystem(
         }
 
         // Tell IntelliJ to import this project
-        @Suppress("UnstableApiUsage")
-        linkAndRefreshGradleProject(rootDirectory.path, project)
+        importGradleProject(rootDirectory.path, project)
 
         invokeLater {
             showProgress(project)

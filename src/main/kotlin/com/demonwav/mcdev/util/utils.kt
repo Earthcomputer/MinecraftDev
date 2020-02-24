@@ -195,6 +195,17 @@ fun Any.invokeDeclaredMethod(name: String, types: Array<Class<*>?>, vararg param
     }
 }
 
+fun Class<*>.invokeStatic(name: String, types: Array<Class<*>?>, vararg params: Any?): Any? {
+    return this.getDeclaredMethod(name, *types)?.let { method ->
+        try {
+            method.isAccessible = true
+            method(null, *params)
+        } catch (_: Exception) {
+            null
+        }
+    }
+}
+
 private fun Any.toClassType(): Class<*> {
     val clazz = this::class
     return clazz.javaPrimitiveType ?: clazz.javaObjectType

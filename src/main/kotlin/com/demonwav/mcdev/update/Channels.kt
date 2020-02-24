@@ -13,7 +13,7 @@ package com.demonwav.mcdev.update
 import com.intellij.openapi.updateSettings.impl.UpdateSettings
 
 enum class Channels(val title: String, val url: String) {
-    NIGHTLY("Nightly", "https://plugins.jetbrains.com/plugins/Nightly/8327");
+    NIGHTLY("Nightly", "https://raw.githubusercontent.com/Earthcomputer/MinecraftDev/updates/nightly.xml");
 
     fun hasChannel(): Boolean {
         return UpdateSettings.getInstance().pluginHosts.contains(url)

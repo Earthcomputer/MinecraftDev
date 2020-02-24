@@ -19,22 +19,17 @@
     <name>Minecraft Development</name>
     <vendor email="demonwav@gmail.com" url="https://minecraftdev.org/">DemonWav</vendor>
 
-    <description><![CDATA[
-      Brings support for Bukkit, Spigot, Paper, Sponge, Forge, MCP, Mixins, BungeeCord, Waterfall, LiteLoader and Fabric projects
-      to Intellij IDEA.
-    ]]></description>
+    <description>
+        To be filled in by Gradle...............
+    </description>
 
-    <change-notes><![CDATA[
-      <div>
-        Please report issues to <a href="https://github.com/minecraft-dev/MinecraftDev/issues">the issue tracker</a>!
-        <p>
-        v. 2019.3-1.3.2
-      </div>
-    ]]>
+    <change-notes>
+        To be filled in by Gradle...............
     </change-notes>
 
     <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="193.2956" until-build="193.*"/>
+    <!--suppress PluginXmlValidity -->
+    <idea-version since-build="" until-build=""/>
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- This is grouped in the following order EXCEPT for localInspections and moduleTypes. All localInspections are grouped at the
