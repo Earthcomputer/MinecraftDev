@@ -292,8 +292,8 @@ val prePatchPluginXml = tasks.create("prePatchPluginXml") {
         }
     }
 
-//    if (ideaMajor.toInt() < 2019 || (ideaMajor.toInt() == 2019 && ideaMinor.toInt() <= 2))
-//        dependencyChanges["com.intellij.gradle"] = "org.jetbrains.idea.gradle"
+    if (ideaMajor.toInt() < 2019 || (ideaMajor.toInt() == 2019 && ideaMinor.toInt() <= 2))
+        dependencyChanges["com.intellij.gradle"] = "org.jetbrains.plugins.gradle"
 }
 
 patchPluginXml {
