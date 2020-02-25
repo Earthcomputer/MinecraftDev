@@ -8,7 +8,7 @@
  * MIT License
  */
 
-package com.demonwav.mcdev.platform.forge.inspections.sideonly
+package com.demonwav.mcdev.inspection.sideonly
 
 import com.demonwav.mcdev.util.findContainingClass
 import com.intellij.psi.PsiClass
@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nls
 class LocalVariableDeclarationSideOnlyInspection : BaseInspection() {
 
     @Nls
-    override fun getDisplayName() = "Invalid usage of local variable declaration annotated with @SideOnly"
+    override fun getDisplayName() = "Invalid usage of local variable declaration annotated with @SideOnly or equivalent"
 
     override fun buildErrorString(vararg infos: Any): String {
         val error = infos[0] as Error
@@ -74,8 +74,8 @@ class LocalVariableDeclarationSideOnlyInspection : BaseInspection() {
                         registerVariableError(
                             variable,
                             Error.VAR_CROSS_ANNOTATED_CLASS,
-                            variableSide.annotation,
-                            containingClassSide.annotation,
+                            variableSide.getAnnotation(variable),
+                            containingClassSide.getAnnotation(variable),
                             variableClass
                         )
                     }
@@ -92,8 +92,8 @@ class LocalVariableDeclarationSideOnlyInspection : BaseInspection() {
                             registerVariableError(
                                 variable,
                                 Error.VAR_UNANNOTATED_METHOD,
-                                variableSide.annotation,
-                                methodSide.annotation,
+                                variableSide.getAnnotation(variable),
+                                methodSide.getAnnotation(variable),
                                 variableClass
                             )
                         }
@@ -101,8 +101,8 @@ class LocalVariableDeclarationSideOnlyInspection : BaseInspection() {
                         registerVariableError(
                             variable,
                             Error.VAR_CROSS_ANNOTATED_METHOD,
-                            variableSide.annotation,
-                            methodSide.annotation,
+                            variableSide.getAnnotation(variable),
+                            methodSide.getAnnotation(variable),
                             variableClass
                         )
                     }

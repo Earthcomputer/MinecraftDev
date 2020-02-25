@@ -8,7 +8,7 @@
  * MIT License
  */
 
-package com.demonwav.mcdev.platform.forge.inspections.sideonly
+package com.demonwav.mcdev.inspection.sideonly
 
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiField
@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nls
 class FieldDeclarationSideOnlyInspection : BaseInspection() {
 
     @Nls
-    override fun getDisplayName() = "Invalid usage of @SideOnly in field declaration"
+    override fun getDisplayName() = "Invalid usage of @SideOnly or equivalent in field declaration"
 
     override fun buildErrorString(vararg infos: Any): String {
         val error = infos[0] as Error
@@ -65,12 +65,12 @@ class FieldDeclarationSideOnlyInspection : BaseInspection() {
                         registerFieldError(
                             field,
                             Error.CLASS_CROSS_ANNOTATED,
-                            fieldSide.annotation,
-                            classSide.annotation,
+                            fieldSide.getAnnotation(field),
+                            classSide.getAnnotation(field),
                             field
                         )
                     } else if (classSide !== Side.NONE) {
-                        registerFieldError(field, Error.CLASS_UNANNOTATED, fieldSide.annotation, null, field)
+                        registerFieldError(field, Error.CLASS_UNANNOTATED, fieldSide.getAnnotation(field), null, field)
                     }
                 }
 
@@ -95,8 +95,8 @@ class FieldDeclarationSideOnlyInspection : BaseInspection() {
                     registerFieldError(
                         field,
                         Error.FIELD_CROSS_ANNOTATED,
-                        fieldClassSide.annotation,
-                        fieldSide.annotation,
+                        fieldClassSide.getAnnotation(field),
+                        fieldSide.getAnnotation(field),
                         field
                     )
                 }

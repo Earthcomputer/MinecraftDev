@@ -8,9 +8,8 @@
  * MIT License
  */
 
-package com.demonwav.mcdev.platform.forge.inspections.sideonly
+package com.demonwav.mcdev.inspection.sideonly
 
-import com.demonwav.mcdev.platform.forge.util.ForgeConstants
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiModifierListOwner
@@ -26,7 +25,7 @@ class RemoveAnnotationInspectionGadgetsFix(element: PsiModifierListOwner, privat
     override fun doFix(project: Project, descriptor: ProblemDescriptor) {
         val owner = pointer.element as? PsiModifierListOwner ?: return
         val list = owner.modifierList ?: return
-        val annotation = list.findAnnotation(ForgeConstants.SIDE_ONLY_ANNOTATION) ?: return
+        val annotation = SideOnlyUtil.getSideAnnotation(list) ?: return
 
         annotation.delete()
     }

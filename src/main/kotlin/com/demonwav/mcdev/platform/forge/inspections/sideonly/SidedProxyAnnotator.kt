@@ -3,7 +3,7 @@
  *
  * https://minecraftdev.org
  *
- * Copyright (c) 2019 minecraft-dev
+ * Copyright (c) 2020 minecraft-dev
  *
  * MIT License
  */
@@ -11,6 +11,7 @@
 package com.demonwav.mcdev.platform.forge.inspections.sideonly
 
 import com.demonwav.mcdev.facet.MinecraftFacet
+import com.demonwav.mcdev.inspection.sideonly.Side
 import com.demonwav.mcdev.platform.forge.ForgeModuleType
 import com.demonwav.mcdev.platform.forge.util.ForgeConstants
 import com.google.common.base.Strings

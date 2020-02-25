@@ -8,7 +8,7 @@
  * MIT License
  */
 
-package com.demonwav.mcdev.platform.forge.inspections.sideonly
+package com.demonwav.mcdev.inspection.sideonly
 
 import com.demonwav.mcdev.platform.forge.util.ForgeConstants
 import com.demonwav.mcdev.util.findContainingClass
@@ -25,7 +25,7 @@ class MethodCallSideOnlyInspection : BaseInspection() {
 
     @Nls
     override fun getDisplayName() =
-        "Invalid usage of a @SideOnly method call"
+        "Invalid usage of a @SideOnly or equivalent method call"
 
     override fun buildErrorString(vararg infos: Any): String {
         val error = infos[0] as Error
@@ -109,16 +109,16 @@ class MethodCallSideOnlyInspection : BaseInspection() {
                             registerError(
                                 referenceExpression.element,
                                 Error.ANNOTATED_CLASS_METHOD_IN_CROSS_ANNOTATED_CLASS_METHOD,
-                                elementSide.annotation,
-                                classSide.annotation,
+                                elementSide.getAnnotation(expression),
+                                classSide.getAnnotation(expression),
                                 declaration
                             )
                         } else {
                             registerError(
                                 referenceExpression.element,
                                 Error.ANNOTATED_METHOD_IN_CROSS_ANNOTATED_CLASS_METHOD,
-                                elementSide.annotation,
-                                classSide.annotation,
+                                elementSide.getAnnotation(expression),
+                                classSide.getAnnotation(expression),
                                 declaration
                             )
                         }
@@ -138,14 +138,14 @@ class MethodCallSideOnlyInspection : BaseInspection() {
                                 registerError(
                                     referenceExpression.element,
                                     Error.ANNOTATED_CLASS_METHOD_IN_UNANNOTATED_METHOD,
-                                    elementSide.annotation, null,
+                                    elementSide.getAnnotation(expression), null,
                                     declaration
                                 )
                             } else {
                                 registerError(
                                     referenceExpression.element,
                                     Error.ANNOTATED_METHOD_IN_UNANNOTATED_METHOD,
-                                    elementSide.annotation, null,
+                                    elementSide.getAnnotation(expression), null,
                                     declaration
                                 )
                             }
@@ -155,16 +155,16 @@ class MethodCallSideOnlyInspection : BaseInspection() {
                             registerError(
                                 referenceExpression.element,
                                 Error.ANNOTATED_CLASS_METHOD_IN_CROSS_ANNOTATED_METHOD,
-                                elementSide.annotation,
-                                methodSide.annotation,
+                                elementSide.getAnnotation(expression),
+                                methodSide.getAnnotation(expression),
                                 declaration
                             )
                         } else {
                             registerError(
                                 referenceExpression.element,
                                 Error.ANNOTATED_METHOD_IN_CROSS_ANNOTATED_METHOD,
-                                elementSide.annotation,
-                                methodSide.annotation,
+                                elementSide.getAnnotation(expression),
+                                methodSide.getAnnotation(expression),
                                 declaration
                             )
                         }

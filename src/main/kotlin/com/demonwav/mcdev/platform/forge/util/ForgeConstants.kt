@@ -14,6 +14,8 @@ object ForgeConstants {
 
     const val SIDE_ONLY_ANNOTATION = "net.minecraftforge.fml.relauncher.SideOnly"
     const val SIDE_ANNOTATION = "net.minecraftforge.fml.relauncher.Side"
+    const val ONLY_IN_ANNOTATION = "net.minecraftforge.api.distmarker.OnlyIn"
+    const val DIST_ANNOTATION = "net.minecraftforge.api.distmarker.Dist"
     const val SIDED_PROXY_ANNOTATION = "net.minecraftforge.fml.common.SidedProxy"
     const val MOD_ANNOTATION = "net.minecraftforge.fml.common.Mod"
     const val CORE_MOD_INTERFACE = "net.minecraftforge.fml.relauncher.IFMLLoadingPlugin"

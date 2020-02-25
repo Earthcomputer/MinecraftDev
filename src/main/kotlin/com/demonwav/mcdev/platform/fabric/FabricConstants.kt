@@ -16,5 +16,7 @@ object FabricConstants {
 
     const val MOD_INITIALIZER = "net.fabricmc.api.ModInitializer"
     const val CLIENT_MOD_INITIALIZER = "net.fabricmc.api.ClientModInitializer"
+    const val ENVIRONMENT_ANNOTATION = "net.fabricmc.api.Environment"
+    const val ENV_TYPE_ANNOTATION = "net.fabricmc.api.EnvType"
 
 }

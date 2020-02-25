@@ -8,17 +8,16 @@
  * MIT License
  */
 
-package com.demonwav.mcdev.platform.forge.inspections.sideonly
+package com.demonwav.mcdev.inspection.sideonly
 
 import com.demonwav.mcdev.facet.MinecraftFacet
+import com.demonwav.mcdev.platform.fabric.FabricConstants
+import com.demonwav.mcdev.platform.fabric.FabricModuleType
 import com.demonwav.mcdev.platform.forge.ForgeModuleType
 import com.demonwav.mcdev.platform.forge.util.ForgeConstants
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.util.Pair
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiField
-import com.intellij.psi.PsiMethod
+import com.intellij.psi.*
 import java.util.Arrays
 import java.util.LinkedList
 
@@ -30,15 +29,35 @@ object SideOnlyUtil {
 
         // Check that the MinecraftModule
         //   1. Exists
-        //   2. Is a ForgeModuleType
+        //   2. Is a ForgeModuleType or FabricModuleType
         val facet = MinecraftFacet.getInstance(module)
-        return facet != null && facet.isOfType(ForgeModuleType)
+        return facet != null && (facet.isOfType(ForgeModuleType) || facet.isOfType(FabricModuleType))
+    }
+
+    fun getSideOnlyName(element: PsiElement): String {
+        val module = ModuleUtilCore.findModuleForPsiElement(element) ?: return "SideOnly"
+        val facet = MinecraftFacet.getInstance(module) ?: return "SideOnly"
+        when {
+            facet.isOfType(ForgeModuleType) -> {
+                val forgeModule = facet.getModuleOfType(ForgeModuleType) ?: return "SideOnly"
+                return if (forgeModule.mcmod == null)
+                    "OnlyIn"
+                else
+                    "SideOnly"
+            }
+            facet.isOfType(FabricModuleType) -> return "Environment"
+            else -> return "SideOnly"
+        }
     }
 
     private fun normalize(text: String): String {
-        if (text.startsWith(ForgeConstants.SIDE_ANNOTATION)) {
-            // We chop off the "net.minecraftforge.fml.relauncher." part here
-            return text.substring(text.lastIndexOf(".") - 4)
+        for (annotation in arrayOf(ForgeConstants.SIDE_ANNOTATION,
+                                   ForgeConstants.DIST_ANNOTATION,
+                                   FabricConstants.ENV_TYPE_ANNOTATION)) {
+            if (text.startsWith(annotation)) {
+                // Remove the package
+                return text.substring(annotation.lastIndexOf(".") + 1)
+            }
         }
         return text
     }
@@ -46,7 +65,7 @@ object SideOnlyUtil {
     fun checkMethod(method: PsiMethod): Side {
         val methodAnnotation =
             // It's not annotated, which would be invalid if the element was annotated
-            method.modifierList.findAnnotation(ForgeConstants.SIDE_ONLY_ANNOTATION)
+            getSideAnnotation(method.modifierList)
             // (which, if we've gotten this far, is true)
                 ?: return Side.NONE
 
@@ -118,7 +137,7 @@ object SideOnlyUtil {
 
         // Check for the annotation, if it's not there then we return none, but this is
         // usually irrelevant for classes
-        val annotation = modifierList.findAnnotation(ForgeConstants.SIDE_ONLY_ANNOTATION)
+        val annotation = getSideAnnotation(modifierList)
         if (annotation == null) {
             if (psiClass.supers.isEmpty()) {
                 return Pair(Side.NONE, psiClass)
@@ -145,7 +164,7 @@ object SideOnlyUtil {
         // We check if this field has the @SideOnly annotation we are looking for
         // If it doesn't, we aren't worried about it
         val modifierList = field.modifierList ?: return Side.NONE
-        val annotation = modifierList.findAnnotation(ForgeConstants.SIDE_ONLY_ANNOTATION) ?: return Side.NONE
+        val annotation = getSideAnnotation(modifierList) ?: return Side.NONE
 
         // The value may not necessarily be set, but that will give an error by default as "value" is a
         // required value for @SideOnly
@@ -155,10 +174,20 @@ object SideOnlyUtil {
         return SideOnlyUtil.getFromName(value.text)
     }
 
+    fun getSideAnnotation(modifierList: PsiAnnotationOwner): PsiAnnotation? {
+        return modifierList.findAnnotation(ForgeConstants.SIDE_ONLY_ANNOTATION) ?:
+                modifierList.findAnnotation(ForgeConstants.ONLY_IN_ANNOTATION) ?:
+                modifierList.findAnnotation(FabricConstants.ENVIRONMENT_ANNOTATION)
+    }
+
     private fun getFromName(name: String): Side {
         return when (normalize(name)) {
             "Side.SERVER" -> Side.SERVER
             "Side.CLIENT" -> Side.CLIENT
+            "Dist.DEDICATED_SERVER" -> Side.SERVER
+            "Dist.CLIENT" -> Side.CLIENT
+            "EnvType.SERVER" -> Side.SERVER
+            "EnvType.CLIENT" -> Side.CLIENT
             else -> Side.INVALID
         }
     }

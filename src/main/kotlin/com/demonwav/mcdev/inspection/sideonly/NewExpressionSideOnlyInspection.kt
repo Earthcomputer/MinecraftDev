@@ -8,7 +8,7 @@
  * MIT License
  */
 
-package com.demonwav.mcdev.platform.forge.inspections.sideonly
+package com.demonwav.mcdev.inspection.sideonly
 
 import com.demonwav.mcdev.util.findContainingClass
 import com.intellij.psi.PsiClass
@@ -21,10 +21,10 @@ import org.jetbrains.annotations.Nls
 class NewExpressionSideOnlyInspection : BaseInspection() {
 
     @Nls
-    override fun getDisplayName() = "Invalid usage of class annotated with @SideOnly"
+    override fun getDisplayName() = "Invalid usage of class annotated with @SideOnly or equivalent"
 
     override fun buildErrorString(vararg infos: Any) =
-        "A class annotated with @SideOnly can only be used in other matching annotated classes and methods"
+        "A class annotated with @${infos[0]} can only be used in other matching annotated classes and methods"
 
     override fun getStaticDescription(): String? {
         return "A class that is annotated as @SideOnly(Side.CLIENT) or @SideOnly(Side.SERVER) cannot be " +
@@ -82,13 +82,13 @@ class NewExpressionSideOnlyInspection : BaseInspection() {
 
                 if (containingClassSide !== Side.NONE && containingClassSide !== Side.INVALID) {
                     if (containingClassSide !== classSide) {
-                        registerError(expression, offender)
+                        registerError(expression, offender, SideOnlyUtil.getSideOnlyName(expression))
                     }
                     classAnnotated = true
                 } else {
                     if (methodSide === Side.INVALID) {
                         // It's not in a method
-                        registerError(expression, offender)
+                        registerError(expression, offender, SideOnlyUtil.getSideOnlyName(expression))
                         return
                     }
                 }
@@ -98,10 +98,10 @@ class NewExpressionSideOnlyInspection : BaseInspection() {
                     if (methodSide === Side.NONE) {
                         // If the class is properly annotated the method doesn't need to also be annotated
                         if (!classAnnotated) {
-                            registerError(expression, offender)
+                            registerError(expression, offender, SideOnlyUtil.getSideOnlyName(expression))
                         }
                     } else {
-                        registerError(expression, offender)
+                        registerError(expression, offender, SideOnlyUtil.getSideOnlyName(expression))
                     }
                 }
             }

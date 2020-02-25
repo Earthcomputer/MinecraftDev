@@ -8,7 +8,7 @@
  * MIT License
  */
 
-package com.demonwav.mcdev.platform.forge.inspections.sideonly
+package com.demonwav.mcdev.inspection.sideonly
 
 import com.intellij.psi.PsiClass
 import com.siyeh.ig.BaseInspection
@@ -19,11 +19,11 @@ import org.jetbrains.annotations.Nls
 class NestedClassSideOnlyInspection : BaseInspection() {
 
     @Nls
-    override fun getDisplayName() = "Invalid usage of @SideOnly in nested class declaration"
+    override fun getDisplayName() = "Invalid usage of @SideOnly or equivalent in nested class declaration"
 
     override fun buildErrorString(vararg infos: Any) =
         "A nested class cannot declare a side that is different from the parent class." +
-            "\nEither remove the nested class's @SideOnly annotation, or change it to match it's parent's side."
+            "\nEither remove the nested class's @${infos[0]} annotation, or change it to match it's parent's side."
 
     override fun getStaticDescription(): String? {
         return "Classes which are annotated with @SideOnly cannot contain any nested classes which are " +
@@ -73,7 +73,7 @@ class NestedClassSideOnlyInspection : BaseInspection() {
                         }
                     } else if (pair.first !== Side.NONE && pair.first !== Side.INVALID) {
                         if (pair.first !== currentSide) {
-                            registerClassError(aClass, aClass)
+                            registerClassError(aClass, aClass, SideOnlyUtil.getSideOnlyName(aClass))
                         } else {
                             return
                         }

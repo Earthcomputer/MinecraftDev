@@ -8,7 +8,7 @@
  * MIT License
  */
 
-package com.demonwav.mcdev.platform.forge.inspections.sideonly
+package com.demonwav.mcdev.inspection.sideonly
 
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiMethod
@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nls
 class MethodSideOnlyInspection : BaseInspection() {
 
     @Nls
-    override fun getDisplayName() = "Invalid usage of @SideOnly in method declaration"
+    override fun getDisplayName() = "Invalid usage of @SideOnly or equivalent in method declaration"
 
     override fun buildErrorString(vararg infos: Any): String {
         val error = infos[0] as Error
@@ -67,8 +67,8 @@ class MethodSideOnlyInspection : BaseInspection() {
                     registerMethodError(
                         method,
                         Error.RETURN_TYPE_ON_WRONG_METHOD,
-                        methodSide.annotation,
-                        returnSide.annotation,
+                        methodSide.getAnnotation(method),
+                        returnSide.getAnnotation(method),
                         method
                     )
                 }
@@ -85,8 +85,8 @@ class MethodSideOnlyInspection : BaseInspection() {
                             registerMethodError(
                                 method,
                                 Error.METHOD_IN_WRONG_CLASS,
-                                methodSide.annotation,
-                                classHierarchySide.first.annotation,
+                                methodSide.getAnnotation(method),
+                                classHierarchySide.first.getAnnotation(method),
                                 method
                             )
                         }
@@ -96,8 +96,8 @@ class MethodSideOnlyInspection : BaseInspection() {
                                 registerMethodError(
                                     method,
                                     Error.RETURN_TYPE_IN_WRONG_CLASS,
-                                    classHierarchySide.first.annotation,
-                                    returnSide.annotation,
+                                    classHierarchySide.first.getAnnotation(method),
+                                    returnSide.getAnnotation(method),
                                     method
                                 )
                             }

@@ -8,7 +8,7 @@
  * MIT License
  */
 
-package com.demonwav.mcdev.platform.forge.inspections.sideonly
+package com.demonwav.mcdev.inspection.sideonly
 
 import com.demonwav.mcdev.util.findContainingClass
 import com.intellij.psi.PsiReferenceExpression
@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nls
 class VariableUseSideOnlyInspection : BaseInspection() {
 
     @Nls
-    override fun getDisplayName() = "Invalid usage of variable annotated with @SideOnly"
+    override fun getDisplayName() = "Invalid usage of variable annotated with @SideOnly or equivalent"
 
     override fun buildErrorString(vararg infos: Any): String {
         val error = infos[0] as Error
@@ -73,16 +73,16 @@ class VariableUseSideOnlyInspection : BaseInspection() {
                             registerError(
                                 expression.element,
                                 Error.ANNOTATED_CLASS_VAR_IN_CROSS_ANNOTATED_CLASS_METHOD,
-                                elementSide.annotation,
-                                classSide.annotation,
+                                elementSide.getAnnotation(expression),
+                                classSide.getAnnotation(expression),
                                 declaration
                             )
                         } else {
                             registerError(
                                 expression.element,
                                 Error.ANNOTATED_VAR_IN_CROSS_ANNOTATED_CLASS_METHOD,
-                                elementSide.annotation,
-                                classSide.annotation,
+                                elementSide.getAnnotation(expression),
+                                classSide.getAnnotation(expression),
                                 declaration
                             )
                         }
@@ -102,7 +102,7 @@ class VariableUseSideOnlyInspection : BaseInspection() {
                                 registerError(
                                     expression.element,
                                     Error.ANNOTATED_CLASS_VAR_IN_UNANNOTATED_METHOD,
-                                    elementSide.annotation,
+                                    elementSide.getAnnotation(expression),
                                     null,
                                     declaration
                                 )
@@ -110,7 +110,7 @@ class VariableUseSideOnlyInspection : BaseInspection() {
                                 registerError(
                                     expression.element,
                                     Error.ANNOTATED_VAR_IN_UNANNOTATED_METHOD,
-                                    elementSide.annotation,
+                                    elementSide.getAnnotation(expression),
                                     null,
                                     declaration
                                 )
@@ -121,16 +121,16 @@ class VariableUseSideOnlyInspection : BaseInspection() {
                             registerError(
                                 expression.element,
                                 Error.ANNOTATED_CLASS_VAR_IN_CROSS_ANNOTATED_METHOD,
-                                elementSide.annotation,
-                                methodSide.annotation,
+                                elementSide.getAnnotation(expression),
+                                methodSide.getAnnotation(expression),
                                 declaration
                             )
                         } else {
                             registerError(
                                 expression.element,
                                 Error.ANNOTATED_VAR_IN_CROSS_ANNOTATED_METHOD,
-                                elementSide.annotation,
-                                methodSide.annotation,
+                                elementSide.getAnnotation(expression),
+                                methodSide.getAnnotation(expression),
                                 declaration
                             )
                         }
