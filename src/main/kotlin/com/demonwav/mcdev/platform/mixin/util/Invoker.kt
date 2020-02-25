@@ -20,6 +20,7 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMember
 import com.intellij.psi.PsiMethod
 import org.jetbrains.annotations.Contract
+import java.util.*
 
 @Contract(pure = true)
 fun PsiMember.findInvokerTarget(): PsiMember? {
@@ -35,9 +36,27 @@ fun resolveInvokerTarget(
         targetClasses: Collection<PsiClass>,
         member: PsiMember
 ): PsiMember? {
-    val value = invoker.findDeclaredAttributeValue("value")?.constantStringValue ?: return null
+    val name = getInvokerTargetName(invoker, member) ?: return null
     return when (member) {
-        is PsiMethod -> targetClasses.mapFirstNotNull { it.findMatchingMethod(member, false, value) }
+        is PsiMethod -> targetClasses.mapFirstNotNull { it.findMatchingMethod(member, false, name) }
         else -> null
     }
 }
+
+fun getInvokerTargetName(invoker: PsiAnnotation, member: PsiMember): String? {
+    val value = invoker.findDeclaredAttributeValue("value")?.constantStringValue
+    if (value != null)
+        return value
+
+    val memberName = member.name ?: return null
+    val result = PATTERN.matchEntire(memberName) ?: return null
+    val prefix = result.groupValues[1]
+    if (prefix == "new" || prefix == "create")
+        return "<init>"
+    val name = result.groupValues[2]
+    if (name.toUpperCase(Locale.ROOT) != name)
+        return name.decapitalize()
+    return name
+}
+
+private val PATTERN = Regex("(call|invoke|new|create)([A-Z].*?)(_\\\$md.*)?")
