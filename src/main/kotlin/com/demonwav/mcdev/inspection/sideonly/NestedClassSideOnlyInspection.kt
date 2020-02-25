@@ -23,7 +23,7 @@ class NestedClassSideOnlyInspection : BaseInspection() {
 
     override fun buildErrorString(vararg infos: Any) =
         "A nested class cannot declare a side that is different from the parent class." +
-            "\nEither remove the nested class's @${infos[0]} annotation, or change it to match it's parent's side."
+            "\nEither remove the nested class's @${infos[1]} annotation, or change it to match it's parent's side."
 
     override fun getStaticDescription(): String? {
         return "Classes which are annotated with @SideOnly cannot contain any nested classes which are " +

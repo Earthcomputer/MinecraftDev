@@ -24,7 +24,7 @@ class NewExpressionSideOnlyInspection : BaseInspection() {
     override fun getDisplayName() = "Invalid usage of class annotated with @SideOnly or equivalent"
 
     override fun buildErrorString(vararg infos: Any) =
-        "A class annotated with @${infos[0]} can only be used in other matching annotated classes and methods"
+        "A class annotated with @${infos[1]} can only be used in other matching annotated classes and methods"
 
     override fun getStaticDescription(): String? {
         return "A class that is annotated as @SideOnly(Side.CLIENT) or @SideOnly(Side.SERVER) cannot be " +
