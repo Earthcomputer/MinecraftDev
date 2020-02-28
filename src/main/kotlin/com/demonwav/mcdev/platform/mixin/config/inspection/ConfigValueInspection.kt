@@ -12,16 +12,8 @@ package com.demonwav.mcdev.platform.mixin.config.inspection
 
 import com.demonwav.mcdev.platform.mixin.config.reference.ConfigProperty
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.json.psi.JsonArray
-import com.intellij.json.psi.JsonBooleanLiteral
-import com.intellij.json.psi.JsonElementVisitor
-import com.intellij.json.psi.JsonNumberLiteral
-import com.intellij.json.psi.JsonObject
-import com.intellij.json.psi.JsonProperty
-import com.intellij.json.psi.JsonStringLiteral
-import com.intellij.json.psi.JsonValue
-import com.intellij.psi.CommonClassNames.JAVA_LANG_STRING
-import com.intellij.psi.CommonClassNames.JAVA_LANG_STRING_SHORT
+import com.intellij.json.psi.*
+import com.intellij.psi.CommonClassNames.*
 import com.intellij.psi.PsiArrayType
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElementVisitor
@@ -80,8 +72,27 @@ class ConfigValueInspection : MixinConfigInspection() {
                 return value is JsonStringLiteral
             }
 
+            if (type.className == "Boolean" && type.resolve()?.qualifiedName == JAVA_LANG_BOOLEAN) {
+                return value is JsonBooleanLiteral || value is JsonNullLiteral
+            }
+
+            if (shortNumberNames.contains(type.className) && qualifiedNumberNames.contains(type.resolve()?.qualifiedName)) {
+                return value is JsonNumberLiteral || value is JsonNullLiteral
+            }
+
             PsiUtil.extractIterableTypeParameter(type, true)?.let { return checkArray(it, value) }
             return value is JsonObject
         }
+
+        private val shortNumberNames = setOf("Byte", "Character", "Double", "Float", "Integer", "Long", "Short")
+        private val qualifiedNumberNames = setOf(
+            JAVA_LANG_BYTE,
+            JAVA_LANG_CHARACTER,
+            JAVA_LANG_DOUBLE,
+            JAVA_LANG_FLOAT,
+            JAVA_LANG_INTEGER,
+            JAVA_LANG_LONG,
+            JAVA_LANG_SHORT
+        )
     }
 }
