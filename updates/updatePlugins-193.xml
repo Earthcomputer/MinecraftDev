@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugins>
-  <plugin id='com.demonwav.minecraft-dev' url='https://dl.bintray.com/earthcomputer/mods/com/demonwav/minecraft-dev/minecraft-dev/2019.3-1.3.2-earth.10/minecraft-dev-2019.3-1.3.2-earth.10.zip' version='2019.3-1.3.2-earth.10'>
+  <plugin id='com.demonwav.minecraft-dev' url='https://dl.bintray.com/earthcomputer/mods/com/demonwav/minecraft-dev/minecraft-dev/2019.3-1.3.2-earth.11/minecraft-dev-2019.3-1.3.2-earth.11.zip' version='2019.3-1.3.2-earth.11'>
     <idea-version since-build='193.2956' until-build='193.*' />
     <name>Minecraft Development</name>
     <description><![CDATA[
@@ -11,7 +11,7 @@
       <div>
       Please report issues to <a href="https://github.com/minecraft-dev/MinecraftDev/issues">the issue tracker</a>!
       <p>
-      v. 2019.3-1.3.2-earth.10
+      v. 2019.3-1.3.2-earth.11
       </div>
     ]]></change-notes>
 

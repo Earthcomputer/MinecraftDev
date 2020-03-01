@@ -29,7 +29,7 @@ object MixinClass : ClassNameReferenceProvider() {
         return (obj.findProperty("package")?.value as? JsonStringLiteral)?.value
     }
 
-    override fun findClasses(element: PsiElement, scope: GlobalSearchScope): List<PsiClass> {
+    public override fun findClasses(element: PsiElement, scope: GlobalSearchScope): List<PsiClass> {
         val facade = JavaPsiFacade.getInstance(element.project)
         val mixinAnnotation = facade.findClass(MIXIN, element.resolveScope) ?: return emptyList()
 
