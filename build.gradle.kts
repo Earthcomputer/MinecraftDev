@@ -297,11 +297,22 @@ val prePatchPluginXml = tasks.create("prePatchPluginXml") {
                 }
             }
 
+            fun removeNode(parent: Node, path: String) {
+                if (path.contains('/')) {
+                    val parts = path.split("/".toRegex(), 2)
+                    (parent.get(parts[0]) as? NodeList)?.forEach {
+                        (it as? Node)?.let { node -> removeNode(node, parts[1]) }
+                    }
+                } else {
+                    (parent.get(path) as? NodeList)?.forEach {
+                        (it as? Node)?.replaceNode(closureOf<Node?> {})
+                    }
+                }
+            }
+
             for (nodeToRemove in removeNodes) {
                 Utils.warn(this, "Pre-patch plugin.xml: deleting all $nodeToRemove")
-                (pluginXml.get(nodeToRemove) as? NodeList)?.forEach {
-                    (it as? Node)?.replaceNode(closureOf<Node?> {})
-                }
+                removeNode(pluginXml, nodeToRemove)
             }
 
             PatchPluginXmlTask.writePatchedPluginXml(pluginXml, File(destinationDir, file.name))
@@ -311,7 +322,7 @@ val prePatchPluginXml = tasks.create("prePatchPluginXml") {
     if (ideaMajor.toInt() < 2019 || (ideaMajor.toInt() == 2019 && ideaMinor.toInt() <= 2))
         dependencyChanges["com.intellij.gradle"] = "org.jetbrains.plugins.gradle"
     if (ideaMajor.toInt() < 2020) {
-        removeNodes.add("postStartupActivities")
+        removeNodes.add("extensions/postStartupActivity")
         removeNodes.add("applicationListeners")
         removeNodes.add("projectListeners")
     } else {
