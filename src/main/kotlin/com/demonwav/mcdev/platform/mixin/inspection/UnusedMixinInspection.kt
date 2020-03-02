@@ -11,6 +11,8 @@
 package com.demonwav.mcdev.platform.mixin.inspection
 
 import com.demonwav.mcdev.facet.MinecraftFacet
+import com.demonwav.mcdev.inspection.sideonly.Side
+import com.demonwav.mcdev.inspection.sideonly.SideOnlyUtil
 import com.demonwav.mcdev.platform.mixin.MixinModuleType
 import com.demonwav.mcdev.platform.mixin.config.reference.MixinClass
 import com.demonwav.mcdev.platform.mixin.util.isMixin
@@ -65,7 +67,12 @@ class UnusedMixinInspection : MixinInspection() {
                     val bestQuickFixFile = bestQuickFixConfig?.virtualFile
                     val qualifiedName = clazz.qualifiedName
                     if (bestQuickFixFile != null && qualifiedName != null) {
-                        val quickFix = QuickFix(bestQuickFixFile, qualifiedName)
+                        val type = when (SideOnlyUtil.getSideForClass(clazz)) {
+                            Side.CLIENT -> "client"
+                            Side.SERVER -> "server"
+                            else -> "mixins"
+                        }
+                        val quickFix = QuickFix(bestQuickFixFile, qualifiedName, type)
                         holder.registerProblem(problematicElement, "Mixin not found in any mixin config", quickFix)
                     } else {
                         holder.registerProblem(problematicElement, "Mixin not found in any mixin config")
@@ -84,16 +91,16 @@ class UnusedMixinInspection : MixinInspection() {
         }
     }
 
-    private class QuickFix(private val quickFixFile: VirtualFile, private val qualifiedName: String) : LocalQuickFix {
+    private class QuickFix(private val quickFixFile: VirtualFile, private val qualifiedName: String, private val type: String) : LocalQuickFix {
         override fun getName() = "Add to mixin config"
 
         override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
             val psiFile = PsiManager.getInstance(project).findFile(quickFixFile) as? JsonFile ?: return
             val root = psiFile.topLevelValue as? JsonObject ?: return
             val pkg = (root.findProperty("package")?.value as? JsonStringLiteral)?.value ?: return
-            var mixinArray = root.findProperty("mixins")?.value as? JsonArray
+            var mixinArray = root.findProperty(type)?.value as? JsonArray
             if (mixinArray == null) {
-                val added = JsonPsiUtil.addProperty(root, JsonElementGenerator(project).createProperty("mixins", "[]"), false)
+                val added = JsonPsiUtil.addProperty(root, JsonElementGenerator(project).createProperty(type, "[]"), false)
                 mixinArray = (added as? JsonProperty)?.value as? JsonArray
                 if (mixinArray == null)
                     return
@@ -104,7 +111,7 @@ class UnusedMixinInspection : MixinInspection() {
             }
             mixinArray.addBefore(JsonElementGenerator(project).createStringLiteral(name), mixinArray.lastChild)
             LanguageImportStatements.INSTANCE.forFile(psiFile).forEach { it.processFile(psiFile).run() }
-            val addedValue = ((psiFile.topLevelValue as? JsonObject)?.findProperty("mixins")?.value as? JsonArray)?.valueList?.first { (it as? JsonStringLiteral)?.value == name } ?: psiFile
+            val addedValue = ((psiFile.topLevelValue as? JsonObject)?.findProperty(type)?.value as? JsonArray)?.valueList?.first { (it as? JsonStringLiteral)?.value == name } ?: psiFile
             EditorHelper.openInEditor(addedValue, true, true)
         }
 
