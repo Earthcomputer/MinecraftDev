@@ -15,6 +15,9 @@ import com.demonwav.mcdev.platform.fabric.FabricConstants
 import com.demonwav.mcdev.platform.fabric.FabricModuleType
 import com.demonwav.mcdev.platform.forge.ForgeModuleType
 import com.demonwav.mcdev.platform.forge.util.ForgeConstants
+import com.intellij.json.psi.JsonFile
+import com.intellij.json.psi.JsonObject
+import com.intellij.json.psi.JsonStringLiteral
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.util.Pair
 import com.intellij.psi.*
@@ -30,8 +33,34 @@ object SideOnlyUtil {
         // Check that the MinecraftModule
         //   1. Exists
         //   2. Is a ForgeModuleType or FabricModuleType
-        val facet = MinecraftFacet.getInstance(module)
-        return facet != null && (facet.isOfType(ForgeModuleType) || facet.isOfType(FabricModuleType))
+        val facet = MinecraftFacet.getInstance(module) ?: return false
+        return when {
+            facet.isOfType(ForgeModuleType) -> facet.getModuleOfType(ForgeModuleType)?.mcmod != null
+            facet.isOfType(FabricModuleType) -> true
+            else -> false
+        }
+    }
+
+    private fun getAmbientSide(element: PsiElement): Side {
+        if (!element.isWritable)
+            return Side.NONE
+        val module = ModuleUtilCore.findModuleForPsiElement(element) ?: return Side.NONE
+        val facet = MinecraftFacet.getInstance(module) ?: return Side.NONE
+        when {
+            facet.isOfType(ForgeModuleType) -> return Side.NONE
+            facet.isOfType(FabricModuleType) -> {
+                val fabJsonFile = facet.getModuleOfType(FabricModuleType)?.fabricJson ?: return Side.NONE
+                val fabJson = PsiManager.getInstance(module.project).findFile(fabJsonFile) as? JsonFile ?: return Side.NONE
+                val environment = ((fabJson.topLevelValue as? JsonObject)?.findProperty("environment")?.value as? JsonStringLiteral)?.value
+                @Suppress("MoveVariableDeclarationIntoWhen")
+                return when (environment) {
+                    "client" -> Side.CLIENT
+                    "server" -> Side.SERVER
+                    else -> Side.NONE
+                }
+            }
+            else -> return Side.NONE
+        }
     }
 
     fun getSideOnlyName(element: PsiElement): String {
@@ -67,7 +96,7 @@ object SideOnlyUtil {
             // It's not annotated, which would be invalid if the element was annotated
             getSideAnnotation(method.modifierList)
             // (which, if we've gotten this far, is true)
-                ?: return Side.NONE
+                ?: return getAmbientSide(method)
 
         // Check the value of the annotation
         val methodValue =
@@ -133,14 +162,14 @@ object SideOnlyUtil {
             return Pair(side, psiClass)
         }
 
-        val modifierList = psiClass.modifierList ?: return Pair(Side.NONE, psiClass)
+        val modifierList = psiClass.modifierList ?: return Pair(getAmbientSide(psiClass), psiClass)
 
         // Check for the annotation, if it's not there then we return none, but this is
         // usually irrelevant for classes
         val annotation = getSideAnnotation(modifierList)
         if (annotation == null) {
             if (psiClass.supers.isEmpty()) {
-                return Pair(Side.NONE, psiClass)
+                return Pair(getAmbientSide(psiClass), psiClass)
             }
 
             // check the classes this class extends
@@ -150,7 +179,7 @@ object SideOnlyUtil {
                     psiClass != it
                 }
                 .map { checkClassHierarchy(it) }
-                .firstOrNull { it.isNotEmpty() }?.let { Pair(it[0].getFirst(), psiClass) } ?: Pair(Side.NONE, psiClass)
+                .firstOrNull { it.isNotEmpty() }?.let { Pair(it[0].getFirst(), psiClass) } ?: Pair(getAmbientSide(psiClass), psiClass)
         }
 
         // Check the value on the annotation. If it's not there, IntelliJ will throw
@@ -163,8 +192,8 @@ object SideOnlyUtil {
     fun checkField(field: PsiField): Side {
         // We check if this field has the @SideOnly annotation we are looking for
         // If it doesn't, we aren't worried about it
-        val modifierList = field.modifierList ?: return Side.NONE
-        val annotation = getSideAnnotation(modifierList) ?: return Side.NONE
+        val modifierList = field.modifierList ?: return getAmbientSide(field)
+        val annotation = getSideAnnotation(modifierList) ?: return getAmbientSide(field)
 
         // The value may not necessarily be set, but that will give an error by default as "value" is a
         // required value for @SideOnly
