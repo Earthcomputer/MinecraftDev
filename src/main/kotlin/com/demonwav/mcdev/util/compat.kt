@@ -29,13 +29,13 @@ import com.intellij.psi.PsiElement
 
 private fun before(major: Int, minor: Int): Boolean {
     val maj = ApplicationInfo.getInstance().majorVersion.toInt()
-    val min = ApplicationInfo.getInstance().minorVersion.toInt()
+    val min = ApplicationInfo.getInstance().minorVersionMainPart.toInt()
     return maj < major || maj == major && min < minor
 }
 
 private fun after(major: Int, minor: Int): Boolean {
     val maj = ApplicationInfo.getInstance().majorVersion.toInt()
-    val min = ApplicationInfo.getInstance().minorVersion.toInt()
+    val min = ApplicationInfo.getInstance().minorVersionMainPart.toInt()
     return maj > major || maj == major && min > minor
 }
 
