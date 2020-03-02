@@ -18,9 +18,9 @@ import com.demonwav.mcdev.nbt.lang.gen.psi.NbttLong
 import com.demonwav.mcdev.nbt.lang.gen.psi.NbttShort
 import com.demonwav.mcdev.nbt.lang.gen.psi.NbttString
 import com.demonwav.mcdev.nbt.lang.gen.psi.NbttTagName
+import com.demonwav.mcdev.util.createInfoAnnotation0
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
-import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 
@@ -36,13 +36,12 @@ class NbttAnnotator : Annotator {
             return
         }
 
-        val annotation = holder.createAnnotation(HighlightSeverity.INFORMATION, element.textRange, null)
-        annotation.textAttributes = NbttSyntaxHighlighter.STRING_NAME
-
-        if (!element.text.startsWith('"')) {
-            // is unquoted
-            annotation.textAttributes = NbttSyntaxHighlighter.UNQUOTED_STRING_NAME
+        val attributes = if (!element.text.startsWith('"')) {
+            NbttSyntaxHighlighter.UNQUOTED_STRING_NAME
+        } else {
+            NbttSyntaxHighlighter.STRING_NAME
         }
+        holder.createInfoAnnotation0(element.textRange, null, attributes)
     }
 
     private fun annotateMaterials(element: PsiElement, holder: AnnotationHolder) {
@@ -58,19 +57,18 @@ class NbttAnnotator : Annotator {
             // won't even let you escape them
 
             val range = TextRange(element.textRange.startOffset + index + 2, element.textRange.endOffset - 1)
-            val annotation = holder.createAnnotation(HighlightSeverity.INFORMATION, range, "Material")
-            annotation.textAttributes = NbttSyntaxHighlighter.MATERIAL
+            holder.createInfoAnnotation0(range, "Material", NbttSyntaxHighlighter.MATERIAL)
         }
     }
 
     private fun annotateTypes(element: PsiElement, holder: AnnotationHolder) {
         when (element) {
-            is NbttByte -> holder.createInfoAnnotation(element, "byte")
-            is NbttShort -> holder.createInfoAnnotation(element, "short")
-            is NbttInt -> holder.createInfoAnnotation(element, "int")
-            is NbttLong -> holder.createInfoAnnotation(element, "long")
-            is NbttFloat -> holder.createInfoAnnotation(element, "float")
-            is NbttDouble -> holder.createInfoAnnotation(element, "double")
+            is NbttByte -> holder.createInfoAnnotation0(element, "byte")
+            is NbttShort -> holder.createInfoAnnotation0(element, "short")
+            is NbttInt -> holder.createInfoAnnotation0(element, "int")
+            is NbttLong -> holder.createInfoAnnotation0(element, "long")
+            is NbttFloat -> holder.createInfoAnnotation0(element, "float")
+            is NbttDouble -> holder.createInfoAnnotation0(element, "double")
         }
     }
 }

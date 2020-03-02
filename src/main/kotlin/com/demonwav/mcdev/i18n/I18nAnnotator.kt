@@ -15,6 +15,8 @@ import com.demonwav.mcdev.i18n.intentions.RemoveUnmatchedEntryIntention
 import com.demonwav.mcdev.i18n.intentions.TrimKeyIntention
 import com.demonwav.mcdev.i18n.lang.gen.psi.I18nEntry
 import com.demonwav.mcdev.i18n.lang.gen.psi.I18nTypes
+import com.demonwav.mcdev.util.createErrorAnnotation0
+import com.demonwav.mcdev.util.createWarningAnnotation0
 import com.demonwav.mcdev.util.mcDomain
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
@@ -29,23 +31,21 @@ class I18nAnnotator : Annotator {
             checkEntryDuplicates(psiElement, psiElement.parent.children, annotations)
         }
         if (psiElement.node.elementType == I18nTypes.DUMMY) {
-            annotations.createErrorAnnotation(psiElement, "Translations must not contain incomplete entries.")
+            annotations.createErrorAnnotation0(psiElement, "Translations must not contain incomplete entries.")
         }
     }
 
     private fun checkEntryKey(entry: I18nEntry, annotations: AnnotationHolder) {
         if (entry.key != entry.trimmedKey) {
             val range = TextRange.from(entry.textRange.startOffset, entry.key.length)
-            annotations.createWarningAnnotation(range, "Translation key contains whitespace at start or end.")
-                .registerFix(TrimKeyIntention())
+            annotations.createWarningAnnotation0(range, "Translation key contains whitespace at start or end.", TrimKeyIntention())
         }
     }
 
     private fun checkEntryDuplicates(entry: I18nEntry, siblings: Array<PsiElement>, annotations: AnnotationHolder) {
         val count = siblings.count { it is I18nEntry && entry.key == it.key }
         if (count > 1) {
-            annotations.createWarningAnnotation(entry, "Duplicate translation keys \"${entry.key}\".")
-                .registerFix(RemoveDuplicatesIntention(entry))
+            annotations.createWarningAnnotation0(entry, "Duplicate translation keys \"${entry.key}\".", RemoveDuplicatesIntention(entry))
         }
     }
 
@@ -56,10 +56,10 @@ class I18nAnnotator : Annotator {
         ) {
             return
         }
-        annotations.createWarningAnnotation(
+        annotations.createWarningAnnotation0(
             entry.textRange,
-            "Translation key not included in default localization file."
+            "Translation key not included in default localization file.",
+            RemoveUnmatchedEntryIntention()
         )
-            .registerFix(RemoveUnmatchedEntryIntention())
     }
 }

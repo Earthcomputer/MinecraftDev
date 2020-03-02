@@ -51,6 +51,7 @@
         <moduleType id="MINECRAFT_MODULE_TYPE" implementationClass="com.demonwav.mcdev.platform.MinecraftModuleType"/>
         <moduleBuilder id="MINECRAFT_MODULE" builderClass="com.demonwav.mcdev.creator.MinecraftModuleBuilder"/>
         <facetType implementation="com.demonwav.mcdev.facet.MinecraftFacetType" />
+        <postStartupActivity implementation="com.demonwav.mcdev.facet.MinecraftFacetDetector"/>
 
         <!-- File templates are for project creations -->
         <fileTemplateGroup implementation="com.demonwav.mcdev.util.MinecraftFileTemplateGroupFactory"/>
@@ -731,6 +732,7 @@
         <projectResolve implementation="com.demonwav.mcdev.platform.mcp.gradle.McpProjectResolverExtension"/>
     </extensions>
 
+    <!-- Pre-2020 -->
     <application-components>
         <component>
             <implementation-class>com.demonwav.mcdev.i18n.I18nFileListener</implementation-class>
@@ -743,6 +745,17 @@
             <loadForDefaultProject/>
         </component>
     </project-components>
+
+    <!-- 2020 and later -->
+    <applicationListeners>
+        <listener class="com.demonwav.mcdev.i18n.I18nFileListener"
+                  topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+    </applicationListeners>
+
+    <projectListeners>
+        <listener class="com.demonwav.mcdev.facet.MinecraftModuleRootListener"
+                  topic="com.intellij.openapi.roots.ModuleRootListener"/>
+    </projectListeners>
 
     <actions>
         <action class="com.demonwav.mcdev.insight.generation.GenerateEventListenerAction"

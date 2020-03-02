@@ -195,6 +195,16 @@ fun Any.invokeDeclaredMethod(name: String, types: Array<Class<*>?>, vararg param
     }
 }
 
+fun Any.invokeVirtual(name: String, types: Array<Class<*>?>, vararg params: Any?): Any? {
+    return javaClass.getDeclaredMethod(name, *types)?.let { method ->
+        try {
+            method(this, *params)
+        } catch (_: Exception) {
+            null
+        }
+    }
+}
+
 fun Class<*>.invokeStatic(name: String, types: Array<Class<*>?>, vararg params: Any?): Any? {
     return this.getDeclaredMethod(name, *types)?.let { method ->
         try {

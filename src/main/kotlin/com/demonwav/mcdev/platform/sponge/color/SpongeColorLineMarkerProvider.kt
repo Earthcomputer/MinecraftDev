@@ -12,6 +12,7 @@ package com.demonwav.mcdev.platform.sponge.color
 
 import com.demonwav.mcdev.insight.ColorLineMarkerProvider
 import com.demonwav.mcdev.insight.setColor
+import com.demonwav.mcdev.util.findEditor
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.LineMarkerProvider
@@ -50,7 +51,7 @@ class SpongeColorLineMarkerProvider : LineMarkerProvider {
                 return@handler
             }
 
-            val editor = PsiUtilBase.findEditor(element) ?: return@handler
+            val editor = findEditor(element) ?: return@handler
 
             val c = ColorChooser.chooseColor(editor.component, "Choose Color", color, false)
             if (c != null) {

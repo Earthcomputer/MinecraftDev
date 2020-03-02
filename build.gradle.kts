@@ -41,18 +41,20 @@ file("credentials.properties").let { if (it.exists()) myCredentials.load(it.buff
 
 val ideaMajor: String by project
 val ideaMinor: String by project
-val ideaVersion = "$ideaMajor.$ideaMinor"
+val ideaVersion: String by project
 val ideaSinceBuild: String by project
 val ideaUntilBuild: String by project
 val mcdevVersion: String by project
 val downloadIdeaSources: String by project
+val gradleToolingExtensionVersion: String by project
+val tomlVersion: String by project
 val isPublish: String by project
 val desc: String by project
 val chNotes: String by project
 
 val projectGroup = "com.demonwav.minecraft-dev"
 group = projectGroup
-version = "$ideaVersion-$mcdevVersion"
+version = "$ideaMajor.$ideaMinor-$mcdevVersion"
 if (properties["buildNumber"] != null) {
     version = "$version.${properties["buildNumber"]}"
 }
@@ -134,7 +136,7 @@ dependencies {
 
     // For non-SNAPSHOT versions (unless Jetbrains fixes this...) find the version with:
     // println(intellij.ideaDependency.buildNumber.substring(intellij.type.length + 1))
-    gradleToolingExtension("com.jetbrains.intellij.gradle:gradle-tooling-extension:193.5233.102")
+    gradleToolingExtension("com.jetbrains.intellij.gradle:gradle-tooling-extension:$gradleToolingExtensionVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.1")
@@ -144,16 +146,14 @@ intellij {
     // IntelliJ IDEA dependency
     version = ideaVersion
     // Bundled plugin dependencies
-    var tomlVersion = "0.2.111.34-193"
-    if (ideaMajor.toInt() < 2019 || (ideaMajor.toInt() == 2019 && ideaMinor.toInt() <= 2))
-        tomlVersion = "0.2.0.25"
-    setPlugins(
+    val needRepoSearch = ideaMajor.toInt() >= 2020
+    setPlugins(*(listOf(
         "java", "maven", "gradle", "Groovy",
         // needed dependencies for unit tests
-        "properties", "junit",
+        "properties", "junit", if (needRepoSearch) "repository-search" else "",
         // useful to have when running for mods.toml
         "org.toml.lang:$tomlVersion"
-    )
+    ).filter { it.isNotEmpty() }.toTypedArray()))
 
     pluginName = "Minecraft Development"
     if (!isPublish.toBoolean())
@@ -265,11 +265,20 @@ tasks.withType<GroovyCompile>().configureEach {
     options.compilerArgs = listOf("-proc:none")
 }
 
+if (ideaMajor.toInt() >= 2020) {
+    tasks.withType<BuildSearchableOptionsTask>().configureEach {
+        // These tasks are failing for some reason with IDEA 2020.1
+        enabled = false
+    }
+}
+
 val prePatchPluginXml = tasks.create("prePatchPluginXml") {
     val pluginXmlFiles = patchPluginXml.get().pluginXmlFiles
     inputs.files("pluginXmlFiles", pluginXmlFiles)
     val dependencyChanges = hashMapOf<String, String>()
     inputs.property("dependencyChanges", dependencyChanges)
+    val removeNodes = arrayListOf<String>()
+    inputs.property("removePostStartupActivities", removeNodes)
     val destinationDir = File(project.buildDir, "prePatchedPluginXmlFiles")
     outputs.dir(destinationDir)
 
@@ -288,12 +297,27 @@ val prePatchPluginXml = tasks.create("prePatchPluginXml") {
                 }
             }
 
+            for (nodeToRemove in removeNodes) {
+                Utils.warn(this, "Pre-patch plugin.xml: deleting all $nodeToRemove")
+                (pluginXml.get(nodeToRemove) as? NodeList)?.forEach {
+                    (it as? Node)?.replaceNode(closureOf<Node?> {})
+                }
+            }
+
             PatchPluginXmlTask.writePatchedPluginXml(pluginXml, File(destinationDir, file.name))
         }
     }
 
     if (ideaMajor.toInt() < 2019 || (ideaMajor.toInt() == 2019 && ideaMinor.toInt() <= 2))
         dependencyChanges["com.intellij.gradle"] = "org.jetbrains.plugins.gradle"
+    if (ideaMajor.toInt() < 2020) {
+        removeNodes.add("postStartupActivities")
+        removeNodes.add("applicationListeners")
+        removeNodes.add("projectListeners")
+    } else {
+        removeNodes.add("application-components")
+        removeNodes.add("project-components")
+    }
 }
 
 patchPluginXml {
@@ -467,7 +491,15 @@ val generate by tasks.registering {
     outputs.dir("gen")
 }
 
-sourceSets.named("main") { java.srcDir(generate) }
+sourceSets.named("main") {
+    java.srcDir(generate)
+    // TODO: (urgently) implement a better way to do this
+    if (ideaMajor.toInt() >= 2020) {
+        java.srcDir("201src")
+    } else {
+        java.srcDir("193src")
+    }
+}
 
 // Remove gen directory on clean
 clean { delete(generate) }

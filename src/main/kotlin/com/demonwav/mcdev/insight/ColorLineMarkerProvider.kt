@@ -11,6 +11,7 @@
 package com.demonwav.mcdev.insight
 
 import com.demonwav.mcdev.MinecraftSettings
+import com.demonwav.mcdev.util.findEditor
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.LineMarkerProvider
@@ -19,7 +20,6 @@ import com.intellij.codeInsight.daemon.NavigateAction
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.psi.PsiElement
-import com.intellij.psi.util.PsiUtilBase
 import com.intellij.util.FunctionUtil
 import com.intellij.util.ui.ColorIcon
 import com.intellij.util.ui.ColorsIcon
@@ -56,7 +56,7 @@ class ColorLineMarkerProvider : LineMarkerProvider {
                     return@handler
                 }
 
-                val editor = PsiUtilBase.findEditor(element) ?: return@handler
+                val editor = findEditor(element) ?: return@handler
 
                 val picker = ColorPicker(map, editor.component)
                 val newColor = picker.showDialog()

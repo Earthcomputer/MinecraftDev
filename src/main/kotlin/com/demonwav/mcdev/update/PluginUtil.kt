@@ -10,7 +10,7 @@
 
 package com.demonwav.mcdev.update
 
-import com.intellij.ide.plugins.PluginManager
+import com.demonwav.mcdev.util.getPlugin
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.extensions.PluginId
 
@@ -19,7 +19,7 @@ object PluginUtil {
 
     val pluginVersion: String
         get() {
-            val plugin = PluginManager.getPlugin(PLUGIN_ID)
+            val plugin = getPlugin(PLUGIN_ID)
                 ?: error("Minecraft Development plugin not found: " + PluginManagerCore.getPlugins().contentToString())
             return plugin.version
         }

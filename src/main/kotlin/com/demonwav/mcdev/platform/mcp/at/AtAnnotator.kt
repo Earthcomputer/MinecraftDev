@@ -16,6 +16,7 @@ import com.demonwav.mcdev.platform.mcp.at.gen.psi.AtEntry
 import com.demonwav.mcdev.platform.mcp.at.gen.psi.AtFieldName
 import com.demonwav.mcdev.platform.mcp.at.gen.psi.AtFunction
 import com.demonwav.mcdev.platform.mcp.at.psi.AtElement
+import com.demonwav.mcdev.util.createEnforcedInfoAnnotation0
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.markup.EffectType
@@ -64,8 +65,7 @@ class AtAnnotator : Annotator {
     }
 
     private fun underline(element: AtElement, holder: AnnotationHolder) {
-        val annotation = holder.createInfoAnnotation(element, null)
-        annotation.enforcedTextAttributes =
+        val enforcedTextAttributes =
             TextAttributes(
                 null,
                 null,
@@ -73,5 +73,6 @@ class AtAnnotator : Annotator {
                 EffectType.BOLD_LINE_UNDERSCORE,
                 Font.PLAIN
             )
+        holder.createEnforcedInfoAnnotation0(element, null, enforcedTextAttributes)
     }
 }

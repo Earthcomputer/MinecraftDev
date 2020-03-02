@@ -11,10 +11,11 @@
 package com.demonwav.mcdev.error
 
 import com.demonwav.mcdev.update.PluginUtil
+import com.demonwav.mcdev.util.getPlugin
+import com.demonwav.mcdev.util.getReportMessagesErrorReport
 import com.intellij.diagnostic.LogMessage
 import com.intellij.diagnostic.ReportMessages
 import com.intellij.ide.DataManager
-import com.intellij.ide.plugins.PluginManager
 import com.intellij.idea.IdeaLogger
 import com.intellij.notification.NotificationListener
 import com.intellij.notification.NotificationType
@@ -46,7 +47,7 @@ class ErrorReporter : ErrorReportSubmitter() {
         bean.description = additionalInfo
         bean.message = event.message
 
-        PluginManager.getPlugin(PluginUtil.PLUGIN_ID)?.let { plugin ->
+        getPlugin(PluginUtil.PLUGIN_ID)?.let { plugin ->
             bean.pluginName = plugin.name
             bean.pluginVersion = plugin.version
         }
@@ -78,7 +79,7 @@ class ErrorReporter : ErrorReportSubmitter() {
                 }
 
                 ReportMessages.GROUP.createNotification(
-                    ReportMessages.ERROR_REPORT,
+                    getReportMessagesErrorReport(),
                     message,
                     NotificationType.INFORMATION,
                     NotificationListener.URL_OPENING_LISTENER
@@ -88,7 +89,7 @@ class ErrorReporter : ErrorReportSubmitter() {
                 val message = "<html>Error Submitting Issue: ${e.message}<br>Consider opening an issue on " +
                     "<a href=\"$baseUrl\">the GitHub issue tracker.</a></html>"
                 ReportMessages.GROUP.createNotification(
-                    ReportMessages.ERROR_REPORT,
+                    getReportMessagesErrorReport(),
                     message,
                     NotificationType.ERROR,
                     NotificationListener.URL_OPENING_LISTENER
