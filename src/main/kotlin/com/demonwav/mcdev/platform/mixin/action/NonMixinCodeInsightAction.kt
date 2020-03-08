@@ -11,14 +11,14 @@
 package com.demonwav.mcdev.platform.mixin.action
 
 import com.demonwav.mcdev.platform.mixin.util.isMixin
+import com.demonwav.mcdev.util.ModalCodeInsightAction
 import com.demonwav.mcdev.util.findContainingClass
-import com.intellij.codeInsight.actions.SimpleCodeInsightAction
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
-abstract class NonMixinCodeInsightAction : SimpleCodeInsightAction() {
+abstract class NonMixinCodeInsightAction : ModalCodeInsightAction() {
 
     override fun startInWriteAction() = false
 

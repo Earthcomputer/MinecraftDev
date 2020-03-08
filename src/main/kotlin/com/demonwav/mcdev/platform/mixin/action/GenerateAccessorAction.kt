@@ -65,16 +65,16 @@ class GenerateAccessorAction : NonMixinCodeInsightAction() {
             return@filter range != null && range.contains(offset)
         }.toTypedArray())
 
-        invokeLater {
+        invokeLater0 {
             if (!chooser.showAndGet())
-                return@invokeLater
+                return@invokeLater0
             val selectedMembers = chooser.selectedElements
             if (selectedMembers.isNullOrEmpty())
-                return@invokeLater
+                return@invokeLater0
             val generateGetters = headerPanel.gettersCheckbox.isSelected
             val generateSetters = headerPanel.settersCheckbox.isSelected
 
-            val mixin = getOrCreateAccessorMixin(project, targetClass) ?: return@invokeLater
+            val mixin = getOrCreateAccessorMixin(project, targetClass) ?: return@invokeLater0
 
             WriteCommandAction.writeCommandAction(project).withName("Generate Accessor/Invoker").withGroupId("Generate Accessor/Invoker").run<RuntimeException> {
                 IdeDocumentHistory.getInstance(project).includeCurrentPlaceAsChangePlace()
