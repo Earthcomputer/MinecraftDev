@@ -33,10 +33,10 @@ class MixinModule(facet: MinecraftFacet) : AbstractModule(facet) {
     override val icon: Icon? = null
 
     companion object {
-        private val mixinFileType = FileTypeManager.getInstance().findFileTypeByName("Mixin Configuration") ?: FileTypes.UNKNOWN
+        private val mixinFileType = lazy { FileTypeManager.getInstance().findFileTypeByName("Mixin Configuration") ?: FileTypes.UNKNOWN }
 
         fun getMixinConfigs(project: Project, scope: GlobalSearchScope): Collection<MixinConfig> {
-            return FileTypeIndex.getFiles(mixinFileType, scope).
+            return FileTypeIndex.getFiles(mixinFileType.value, scope).
                     mapNotNull { (PsiManager.getInstance(project).findFile(it) as? JsonFile)?.topLevelValue as? JsonObject }.
                     map { MixinConfig(project, it) }
         }
