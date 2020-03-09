@@ -43,6 +43,8 @@ class MinecraftFacetEditorTab(private val configuration: MinecraftFacetConfigura
     private lateinit var bungeecordAutoCheckBox: JCheckBox
     private lateinit var waterfallEnabledCheckBox: JCheckBox
     private lateinit var waterfallAutoCheckBox: JCheckBox
+    private lateinit var fabricEnabledCheckBox: JCheckBox
+    private lateinit var fabricAutoCheckBox: JCheckBox
 
     private lateinit var spongeIcon: JLabel
     private lateinit var mcpIcon: JLabel
@@ -59,7 +61,8 @@ class MinecraftFacetEditorTab(private val configuration: MinecraftFacetConfigura
             mcpEnabledCheckBox,
             mixinEnabledCheckBox,
             bungeecordEnabledCheckBox,
-            waterfallEnabledCheckBox
+            waterfallEnabledCheckBox,
+            fabricEnabledCheckBox
         )
     }
 
@@ -74,7 +77,8 @@ class MinecraftFacetEditorTab(private val configuration: MinecraftFacetConfigura
             mcpAutoCheckBox,
             mixinAutoCheckBox,
             bungeecordAutoCheckBox,
-            waterfallAutoCheckBox
+            waterfallAutoCheckBox,
+            fabricAutoCheckBox
         )
     }
 
@@ -133,6 +137,7 @@ class MinecraftFacetEditorTab(private val configuration: MinecraftFacetConfigura
         forgeEnabledCheckBox.addActionListener { also(forgeEnabledCheckBox, mcpEnabledCheckBox) }
         liteloaderEnabledCheckBox.addActionListener { also(liteloaderEnabledCheckBox, mcpEnabledCheckBox) }
         mixinEnabledCheckBox.addActionListener { also(mixinEnabledCheckBox, mcpEnabledCheckBox) }
+        fabricEnabledCheckBox.addActionListener { also(mixinEnabledCheckBox, mcpEnabledCheckBox) }
 
         bungeecordEnabledCheckBox.addActionListener { unique(bungeecordEnabledCheckBox, waterfallEnabledCheckBox) }
         waterfallEnabledCheckBox.addActionListener { unique(waterfallEnabledCheckBox, bungeecordEnabledCheckBox) }
@@ -256,6 +261,7 @@ class MinecraftFacetEditorTab(private val configuration: MinecraftFacetConfigura
         private const val MIXIN = MCP + 1
         private const val BUNGEECORD = MIXIN + 1
         private const val WATERFALL = BUNGEECORD + 1
+        private const val FABRIC = WATERFALL + 1
 
         private val platformTypes = arrayOf(
             PlatformType.BUKKIT,
@@ -267,10 +273,11 @@ class MinecraftFacetEditorTab(private val configuration: MinecraftFacetConfigura
             PlatformType.MCP,
             PlatformType.MIXIN,
             PlatformType.BUNGEECORD,
-            PlatformType.WATERFALL
+            PlatformType.WATERFALL,
+            PlatformType.FABRIC
         )
 
         private val indexes =
-            intArrayOf(BUKKIT, SPIGOT, PAPER, SPONGE, FORGE, LITELOADER, MCP, MIXIN, BUNGEECORD, WATERFALL)
+            intArrayOf(BUKKIT, SPIGOT, PAPER, SPONGE, FORGE, LITELOADER, MCP, MIXIN, BUNGEECORD, WATERFALL, FABRIC)
     }
 }
