@@ -12,22 +12,20 @@ package com.demonwav.mcdev.platform.mixin.inspection
 
 import com.demonwav.mcdev.inspection.sideonly.Side
 import com.demonwav.mcdev.inspection.sideonly.SideOnlyUtil
-import com.demonwav.mcdev.platform.mixin.util.MixinConfig
+import com.demonwav.mcdev.platform.mixin.config.MixinConfig
 import com.demonwav.mcdev.platform.mixin.MixinModule
 import com.demonwav.mcdev.platform.mixin.util.isMixin
 import com.demonwav.mcdev.util.findModule
+import com.demonwav.mcdev.util.fullQualifiedName
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.json.psi.*
-import com.intellij.openapi.fileTypes.FileTypeManager
-import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.JavaElementVisitor
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiManager
-import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 
 class UnusedMixinInspection : MixinInspection() {
@@ -40,30 +38,25 @@ class UnusedMixinInspection : MixinInspection() {
         override fun visitClass(clazz: PsiClass?) {
             val module = clazz?.findModule() ?: return
             if (clazz.isMixin) {
-                var errorMessage = "File type: ${FileTypeManager.getInstance().findFileTypeByName("Mixin Configuration") ?: FileTypes.UNKNOWN}\n"
-                errorMessage += "Checked ${FileTypeIndex.getFiles(FileTypeManager.getInstance().findFileTypeByName("Mixin Configuration") ?: FileTypes.UNKNOWN, GlobalSearchScope.moduleScope(module))}\n"
-
                 for (config in MixinModule.getMixinConfigs(module.project, GlobalSearchScope.moduleScope(module))) {
-                    errorMessage += "${config.pkg}: ${config.qualifiedMixins}, ${config.qualifiedClient}\n"
-                    if (config.qualifiedMixins.any { it == clazz.qualifiedName })
+                    if (config.qualifiedMixins.any { it == clazz.fullQualifiedName })
                         return
-                    if (config.qualifiedClient.any { it == clazz.qualifiedName })
+                    if (config.qualifiedClient.any { it == clazz.fullQualifiedName })
                         return
-                    if (config.qualifiedServer.any { it == clazz.qualifiedName })
+                    if (config.qualifiedServer.any { it == clazz.fullQualifiedName })
                         return
                 }
 
-                val bestQuickFixConfig = MixinModule.getBestWritableConfigForMixinClass(module.project, GlobalSearchScope.moduleScope(module), clazz.qualifiedName ?: "")
-                errorMessage += "Best config: ${bestQuickFixConfig?.pkg}"
+                val bestQuickFixConfig = MixinModule.getBestWritableConfigForMixinClass(module.project, GlobalSearchScope.moduleScope(module), clazz.fullQualifiedName ?: "")
                 val problematicElement = clazz.nameIdentifier
                 if (problematicElement != null) {
                     val bestQuickFixFile = bestQuickFixConfig?.file
-                    val qualifiedName = clazz.qualifiedName
+                    val qualifiedName = clazz.fullQualifiedName
                     if (bestQuickFixFile != null && qualifiedName != null) {
                         val quickFix = QuickFix(bestQuickFixFile, qualifiedName, SideOnlyUtil.getSideForClass(clazz))
-                        holder.registerProblem(problematicElement, "Mixin not found in any mixin config\n$errorMessage", quickFix)
+                        holder.registerProblem(problematicElement, "Mixin not found in any mixin config", quickFix)
                     } else {
-                        holder.registerProblem(problematicElement, "Mixin not found in any mixin config\n$errorMessage")
+                        holder.registerProblem(problematicElement, "Mixin not found in any mixin config")
                     }
                 }
             }

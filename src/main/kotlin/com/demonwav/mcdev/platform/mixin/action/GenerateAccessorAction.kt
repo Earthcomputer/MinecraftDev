@@ -148,9 +148,9 @@ class GenerateAccessorAction : NonMixinCodeInsightAction() {
             AddAnnotationFix(MixinConstants.Annotations.MIXIN, clazz!!, annotation.parameterList.attributes).applyFix()
 
             val module = clazz!!.findModule() ?: return@run
-            MixinModule.getBestWritableConfigForMixinClass(project, GlobalSearchScope.moduleScope(module), clazz!!.qualifiedName ?: "")?.
+            MixinModule.getBestWritableConfigForMixinClass(project, GlobalSearchScope.moduleScope(module), clazz!!.fullQualifiedName ?: "")?.
                     qualifiedMixins?.
-                    add(clazz!!.qualifiedName)
+                    add(clazz!!.fullQualifiedName)
         }
 
         return clazz
@@ -159,6 +159,7 @@ class GenerateAccessorAction : NonMixinCodeInsightAction() {
     private fun countAccessorMixins(project: Project, names: List<String?>): Int {
         return names.asSequence().
                 filterNotNull().
+                map { it.replace('$', '.') }.
                 distinct().
                 flatMap { JavaPsiFacade.getInstance(project).findClasses(it, GlobalSearchScope.projectScope(project)).asSequence() }.
                 filter { it.isAccessorMixin }.

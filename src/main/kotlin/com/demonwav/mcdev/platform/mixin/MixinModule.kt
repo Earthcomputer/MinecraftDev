@@ -13,7 +13,7 @@ package com.demonwav.mcdev.platform.mixin
 import com.demonwav.mcdev.facet.MinecraftFacet
 import com.demonwav.mcdev.platform.AbstractModule
 import com.demonwav.mcdev.platform.PlatformType
-import com.demonwav.mcdev.platform.mixin.util.MixinConfig
+import com.demonwav.mcdev.platform.mixin.config.MixinConfig
 import com.intellij.json.psi.JsonFile
 import com.intellij.json.psi.JsonObject
 import com.intellij.openapi.fileTypes.FileTypeManager
@@ -45,6 +45,7 @@ class MixinModule(facet: MinecraftFacet) : AbstractModule(facet) {
             return getMixinConfigs(project, scope).asSequence().
                     flatMap { (it.qualifiedMixins + it.qualifiedClient + it.qualifiedServer).asSequence() }.
                     filterNotNull().
+                    map { it.replace('$', '.') }.
                     distinct().
                     flatMap { JavaPsiFacade.getInstance(project).findClasses(it, scope).asSequence() }.
                     toList()

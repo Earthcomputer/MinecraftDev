@@ -8,7 +8,7 @@
  * MIT License
  */
 
-package com.demonwav.mcdev.platform.mixin.util
+package com.demonwav.mcdev.platform.mixin.config
 
 import com.intellij.json.JsonElementTypes
 import com.intellij.json.psi.*
