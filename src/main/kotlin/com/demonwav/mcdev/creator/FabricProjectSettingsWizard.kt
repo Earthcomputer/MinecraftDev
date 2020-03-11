@@ -159,7 +159,7 @@ class FabricProjectSettingsWizard(private val creator: MinecraftProjectCreator) 
                 modNameField,
                 modVersionField,
                 null,
-                authorsField,
+                null, // don't validate authors, always valid
                 null,
                 pattern
         ) && !loadingBar.isVisible
