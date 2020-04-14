@@ -26,6 +26,7 @@ Installation
 1. Click the gear icon on the top, and click "Manage Plugin Repositories"
 1. Add a raw GitHub link to the update file in the [updates directory](https://github.com/Earthcomputer/MinecraftDev/tree/dev_new/updates), corresponding to the version of IntelliJ you have. For example, if you have 2019.3, use https://raw.githubusercontent.com/Earthcomputer/MinecraftDev/dev_new/updates/updatePlugins-193.xml
 1. MinecraftDev should now show an update if you have the official version installed, which corresponds to Earth's edition of MinecraftDev. If you didn't have the official version installed, installing MinecraftDev will also install Earth's edition.
+1. Lately (as of April 2020) some people seem to be having issues getting IDEA to recognize the plugin updates. You can instead install it manually from the zip. You can find a direct download to the zip in the update xml pretty easily (it's pretty obvious where it is).
 
 ### Installation instructions for the official project:
 
