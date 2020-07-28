@@ -29,10 +29,10 @@ class FabricProjectConfiguration : ProjectConfiguration() {
     var yarnClassifier: String? = "v2"
     var mcVersion = ""
     var normalizedMcVersion: String? = null
-    var loaderVersion = "0.7.8+build.184"
+    var loaderVersion = "0.9+build.204"
     var apiVersion: String? = null
     var apiMavenLocation: String? = null
-    var gradleLoomVersion = "0.2.6"
+    var gradleLoomVersion = "0.4"
     var gradleVersion = "5.5.1"
     var environment = Environment.BOTH
     var entryPoints: List<EntryPoint> = arrayListOf()
